@@ -1,21 +1,408 @@
 ---
-
+const brand = "ATIKOU";
+const subtitle = "CYBERPUNK PORTFOLIO · BLOG · DEV NOTES";
+const nav = [
+  { href: "projects/", label: "项目", en: "PROJECTS", hint: "作品集 / Demo / 原型" },
+  { href: "blog/", label: "文章", en: "BLOG", hint: "复盘 / 技术 / 灵感" },
+  { href: "notes/", label: "笔记", en: "NOTES", hint: "开发记录 / 备忘" },
+];
 ---
 
 <html lang="zh-cn">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-		<ul>
-			<li><a href="/blog/">文章</a></li>
-			<li><a href="/notes/">笔记</a></li>
-			<li><a href="/projects/">项目</a></li>
-		</ul>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <!-- GitHub Pages 项目页下避免绝对路径：不要写 /favicon.svg -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{brand}</title>
+
+    <style>
+      :root{
+        color-scheme: dark;
+        --bg0:#06060a;
+        --bg1:#090914;
+        --ink:rgba(255,255,255,.90);
+        --mut:rgba(255,255,255,.62);
+        --line:rgba(255,255,255,.14);
+        --line2:rgba(255,255,255,.09);
+        --pink:#ff2bd6;
+        --cyan:#28f7ff;
+        --lime:#b6ff3b;
+        --vio:#7a4dff;
+        --shadow:rgba(0,0,0,.65);
+      }
+
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+        color:var(--ink);
+        background:
+          radial-gradient(900px 500px at 15% 10%, rgba(255,43,214,.20), transparent 60%),
+          radial-gradient(900px 520px at 85% 15%, rgba(40,247,255,.16), transparent 60%),
+          radial-gradient(900px 520px at 50% 110%, rgba(182,255,59,.10), transparent 60%),
+          linear-gradient(180deg, var(--bg0), var(--bg1));
+        overflow-x:hidden;
+      }
+
+      /* 扫描线 + 轻噪点 */
+      .fx{
+        position:fixed; inset:0; pointer-events:none;
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,.03),
+            rgba(255,255,255,.03) 1px,
+            transparent 1px,
+            transparent 5px
+          );
+        mix-blend-mode: overlay;
+        opacity:.22;
+      }
+      .noise{
+        position:fixed; inset:0; pointer-events:none;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+        opacity:.20;
+      }
+
+      .wrap{max-width:1120px; margin:0 auto; padding:28px 18px 64px}
+
+      header{
+        display:flex; align-items:center; justify-content:space-between; gap:12px;
+        padding:10px 0 18px;
+      }
+      .logo{
+        display:flex; align-items:center; gap:12px;
+        text-decoration:none; color:inherit;
+      }
+      .chip{
+        width:14px; height:14px; border-radius:4px;
+        background: linear-gradient(135deg, rgba(255,43,214,.85), rgba(40,247,255,.75));
+        box-shadow: 0 14px 40px rgba(255,43,214,.18);
+      }
+      .logo span{
+        font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+        color:rgba(255,255,255,.78);
+      }
+
+      .mini-nav{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+      .mini{
+        display:inline-flex; align-items:center; gap:8px;
+        padding:10px 12px;
+        border:1px solid var(--line);
+        border-radius:999px;
+        background: rgba(255,255,255,.03);
+        text-decoration:none; color:rgba(255,255,255,.76);
+        backdrop-filter: blur(10px);
+        transition: transform .16s ease, border-color .16s ease, background .16s ease;
+      }
+      .mini:hover{
+        transform: translateY(-1px);
+        border-color: rgba(255,255,255,.26);
+        background: rgba(255,255,255,.06);
+      }
+
+      .hero{
+        display:grid;
+        grid-template-columns: 1.2fr .8fr;
+        gap:16px;
+        align-items:start;
+      }
+      @media (max-width: 860px){ .hero{grid-template-columns:1fr;} }
+
+      .card{
+        border: 1px solid var(--line2);
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+        box-shadow: 0 28px 70px var(--shadow);
+        backdrop-filter: blur(10px);
+        overflow:hidden;
+        position:relative;
+      }
+
+      /* 霓虹描边 */
+      .card.neon:before{
+        content:"";
+        position:absolute; inset:-2px;
+        background: linear-gradient(90deg, rgba(255,43,214,.35), rgba(40,247,255,.25), rgba(182,255,59,.20));
+        filter: blur(12px);
+        opacity:.55;
+        pointer-events:none;
+      }
+
+      .main{
+        padding:26px 22px 22px;
+      }
+
+      .kicker{
+        margin:0 0 10px;
+        font-size:12px;
+        letter-spacing:.26em;
+        text-transform:uppercase;
+        color:rgba(255,255,255,.62);
+      }
+
+      .title{
+        margin:0 0 10px;
+        font-size: clamp(34px, 5vw, 54px);
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        text-shadow: 0 0 22px rgba(40,247,255,.14);
+      }
+
+      /* 赛博故障效果（轻量） */
+      .glitch{
+        position:relative;
+        display:inline-block;
+      }
+      .glitch:before, .glitch:after{
+        content: attr(data-text);
+        position:absolute;
+        left:0; top:0;
+        width:100%;
+        overflow:hidden;
+        opacity:.55;
+        pointer-events:none;
+      }
+      .glitch:before{
+        transform: translate(1px, -1px);
+        color: var(--cyan);
+        clip-path: inset(0 0 55% 0);
+      }
+      .glitch:after{
+        transform: translate(-1px, 1px);
+        color: var(--pink);
+        clip-path: inset(45% 0 0 0);
+      }
+
+      .desc{
+        margin:0;
+        color: var(--mut);
+        line-height: 1.85;
+        font-size: 15px;
+        max-width: 64ch;
+      }
+
+      .cta{
+        margin-top: 16px;
+        display:flex; gap:10px; flex-wrap:wrap;
+      }
+      .btn{
+        display:inline-flex; align-items:center; gap:10px;
+        padding:12px 14px;
+        border-radius:14px;
+        border:1px solid rgba(255,255,255,.16);
+        background: rgba(255,255,255,.05);
+        color: rgba(255,255,255,.88);
+        text-decoration:none;
+        transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      }
+      .btn:hover{
+        transform: translateY(-1px);
+        background: rgba(255,255,255,.08);
+        border-color: rgba(255,255,255,.26);
+      }
+      .btn.primary{
+        border-color: rgba(40,247,255,.32);
+        background: linear-gradient(135deg, rgba(40,247,255,.14), rgba(255,43,214,.10));
+      }
+      .btn .dot{
+        width:8px; height:8px; border-radius:999px;
+        background: linear-gradient(135deg, var(--cyan), var(--pink));
+        box-shadow: 0 0 18px rgba(40,247,255,.20);
+      }
+
+      .grid{
+        margin-top:16px;
+        display:grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 12px;
+      }
+      .nav{
+        grid-column: span 4;
+        padding:16px 14px;
+        border-radius: 18px;
+        border: 1px solid var(--line2);
+        background: rgba(255,255,255,.03);
+        text-decoration:none;
+        color:inherit;
+        transition: transform .16s ease, border-color .16s ease, background .16s ease;
+        position:relative;
+      }
+      .nav:hover{
+        transform: translateY(-2px);
+        border-color: rgba(40,247,255,.22);
+        background: rgba(255,255,255,.055);
+      }
+      @media (max-width: 860px){ .nav{grid-column: span 12;} }
+
+      .nav .top{
+        display:flex; align-items:baseline; justify-content:space-between;
+        gap:10px;
+        margin-bottom: 6px;
+      }
+      .nav .cn{font-size:16px; margin:0;}
+      .nav .en{
+        margin:0;
+        font-size:12px;
+        letter-spacing:.18em;
+        text-transform:uppercase;
+        color: rgba(255,255,255,.55);
+      }
+      .nav .hint{
+        margin:0;
+        color: rgba(255,255,255,.62);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      /* 右侧“海报”占位 */
+      .side{padding:18px;}
+      .poster{
+        height: 260px;
+        border-radius: 18px;
+        border: 1px dashed rgba(40,247,255,.28);
+        background:
+          radial-gradient(140px 140px at 30% 35%, rgba(255,43,214,.26), transparent 70%),
+          radial-gradient(160px 160px at 65% 55%, rgba(40,247,255,.18), transparent 70%),
+          radial-gradient(190px 190px at 50% 80%, rgba(182,255,59,.10), transparent 70%),
+          linear-gradient(135deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+        position:relative;
+        overflow:hidden;
+      }
+      .poster:after{
+        content:"";
+        position:absolute; inset:-60px;
+        background:
+          conic-gradient(from 240deg at 50% 50%,
+            rgba(255,43,214,.22),
+            rgba(0,0,0,0),
+            rgba(40,247,255,.18),
+            rgba(0,0,0,0),
+            rgba(182,255,59,.10),
+            rgba(0,0,0,0)
+          );
+        filter: blur(18px);
+        opacity:.75;
+        animation: drift 9s ease-in-out infinite;
+      }
+      @keyframes drift{
+        0%,100%{ transform: translate3d(0,0,0) rotate(0deg); }
+        50%{ transform: translate3d(12px,-10px,0) rotate(7deg); }
+      }
+      .side p{
+        margin: 12px 2px 0;
+        color: rgba(255,255,255,.60);
+        font-size: 13px;
+        line-height: 1.75;
+      }
+      code{
+        color: rgba(255,255,255,.82);
+        background: rgba(255,255,255,.06);
+        padding: 2px 6px;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 8px;
+      }
+
+      footer{
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255,255,255,.10);
+        color: rgba(255,255,255,.52);
+        font-size: 12px;
+        display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between;
+      }
+      footer a{
+        color: rgba(40,247,255,.72);
+        text-decoration:none;
+        border-bottom: 1px dotted rgba(40,247,255,.40);
+      }
+      footer a:hover{
+        color: rgba(255,255,255,.92);
+        border-bottom-color: rgba(255,255,255,.55);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="fx"></div>
+    <div class="noise"></div>
+
+    <div class="wrap">
+      <header>
+        <a class="logo" href="./" aria-label="Home">
+          <span class="chip" aria-hidden="true"></span>
+          <span>NEON NODE // {brand}</span>
+        </a>
+
+        <nav class="mini-nav" aria-label="Quick nav">
+          <a class="mini" href="projects/"><span aria-hidden="true">⌬</span> Projects</a>
+          <a class="mini" href="blog/"><span aria-hidden="true">✶</span> Blog</a>
+          <a class="mini" href="notes/"><span aria-hidden="true">⌁</span> Notes</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div class="card neon main">
+          <p class="kicker">{subtitle}</p>
+
+          <h1 class="title">
+            <span class="glitch" data-text={brand}>{brand}</span>
+          </h1>
+
+          <p class="desc">
+            这里是我的赛博朋克工作台：展示作品集、记录开发过程、写下技术与灵感。
+            <br />
+            入口都在下面：<code>projects/</code> · <code>blog/</code> · <code>notes/</code>
+          </p>
+
+          <div class="cta">
+            <a class="btn primary" href="projects/"><span class="dot" aria-hidden="true"></span>进入项目</a>
+            <a class="btn" href="blog/"><span class="dot" aria-hidden="true"></span>阅读文章</a>
+            <a class="btn" href="notes/"><span class="dot" aria-hidden="true"></span>打开笔记</a>
+          </div>
+
+          <div class="grid" aria-label="Sections">
+            {nav.map((n) => (
+              <a class="nav" href={n.href}>
+                <div class="top">
+                  <h2 class="cn">{n.label}</h2>
+                  <p class="en">{n.en}</p>
+                </div>
+                <p class="hint">{n.hint}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <aside class="card side">
+          <!--
+            TODO: 将来替换为你的作品海报/封面：
+            1) 把图片放到 public/images/hero.jpg
+            2) 把下面这个 div.poster 替换为：
+               <img src="images/hero.jpg" alt="Hero artwork"
+                    style="width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.12);" />
+          -->
+          <div class="poster" aria-label="Artwork placeholder"></div>
+
+          <p>
+            占位海报已就位。后续把封面图放进 <code>public/images</code> 就能替换。
+            <br />
+            小提示：部署在 GitHub Pages 项目页时，链接尽量用相对路径更稳。
+          </p>
+        </aside>
+      </section>
+
+      <footer>
+        <div>© {new Date().getFullYear()} {brand} · Built with Astro</div>
+        <div>
+          <!-- TODO: 你有联系方式的话可以改成 mailto: 或外链 -->
+          <a href="projects/">Projects</a> · <a href="blog/">Blog</a> · <a href="notes/">Notes</a>
+        </div>
+      </footer>
+    </div>
+  </body>
 </html>
