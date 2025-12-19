@@ -1,0 +1,26 @@
+{
+    "src/pages/index.astro": {
+        "description": "主页面"
+    },
+    "src/pages/blog": {
+        "description": "博客"
+    },
+    "src/pages/notes": {
+        "description": "笔记"
+    },
+    "src/pages/projects": {
+        "description": "项目"
+    },
+    "src/pages/projects/index.astro": {
+        "description": "项目页面"
+    },
+    "src/pages/notes/index.astro": {
+        "description": "笔记页面"
+    },
+    "src/pages/blog/index.astro": {
+        "description": "博客页面"
+    },
+    "src/content": {
+        "description": "markdown"
+    }
+}

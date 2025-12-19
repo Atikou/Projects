@@ -1,16 +1,123 @@
 ---
+import NoteCard, { type Note } from "../../components/NoteCard.astro";
 
+const notes: readonly Note[] = [
+  {
+    title: "战斗数值：伤害公式的可控性",
+    slug: "combat-damage-formula",
+    summary: "从可解释性、可调性、可扩展性梳理常用结构与避坑清单，适合做战斗原型与上线调参。",
+    cover: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
+    tags: ["数值", "战斗", "设计"],
+    date: "2025-12-01"
+  },
+  {
+    title: "Unity Addressables：资源分包与热更策略",
+    slug: "unity-addressables",
+    summary: "记录一次包体优化：分组、依赖分析、远端 Catalog、灰度发布与回滚的关键点。",
+    cover: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Unity", "工程", "热更"],
+    date: "2025-11-18"
+  },
+  {
+    title: "AIGC 在美术流程中怎么落地更靠谱",
+    slug: "aigc-art-pipeline",
+    summary: "把 AIGC 当作“提案加速器”：提示词资产化、风格一致性、审校节点与版本管理。",
+    cover: "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=1200&q=80",
+    tags: ["AIGC", "流程", "美术"],
+    date: "2025-10-22"
+  }
+] satisfies readonly Note[];
+
+const tags = Array.from(new Set(notes.flatMap((n) => [...n.tags]))).sort((a, b) =>
+  a.localeCompare(b, "zh-Hans-CN")
+);
+
+const url = new URL(Astro.request.url);
+const q = (url.searchParams.get("q") ?? "").trim();
+const activeTag = (url.searchParams.get("tag") ?? "").trim();
+
+const filtered = notes
+  .filter((n) => (activeTag ? n.tags.includes(activeTag) : true))
+  .filter((n) => {
+    if (!q) return true;
+    const hay = `${n.title} ${n.summary} ${n.tags.join(" ")}`.toLowerCase();
+    return hay.includes(q.toLowerCase());
+  })
+  .slice()
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
 ---
 
-<html lang="zh-cn">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Notes</title>
-	</head>
-	<body>
-		<h1>Notes</h1>
-	</body>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>笔记</title>
+    <meta name="description" content="项目/设计/工程/流程相关的游戏开发笔记。" />
+    <link rel="stylesheet" href="/src/styles/notes.css" />
+  </head>
+
+  <body>
+    <div class="bg" aria-hidden="true"></div>
+
+    <main class="wrap">
+      <header class="hero">
+        <div>
+          <p class="kicker">NOTES</p>
+          <h1>笔记</h1>
+          <p class="sub">项目复盘、设计记录、工程与流程沉淀。</p>
+        </div>
+
+        <div class="badge">
+          <span class="num">{notes.length}</span>
+          <span class="lbl">篇</span>
+        </div>
+      </header>
+
+      <section class="panel">
+        <form class="filters" method="get">
+          <label class="search" aria-label="搜索">
+            <span class="icon" aria-hidden="true">⌕</span>
+            <input type="search" name="q" placeholder="搜索标题 / 标签 / 简介…" value={q} />
+            {activeTag && <input type="hidden" name="tag" value={activeTag} />}
+          </label>
+
+          <nav class="chips" aria-label="标签筛选">
+            <a class={`chip ${!activeTag ? "active" : ""}`} href={`/notes${q ? `?q=${encodeURIComponent(q)}` : ""}`}>
+              全部
+            </a>
+
+            {tags.map((t) => {
+              const params = new URLSearchParams();
+              if (q) params.set("q", q);
+              params.set("tag", t);
+              return (
+                <a class={`chip ${activeTag === t ? "active" : ""}`} href={`/notes?${params.toString()}`}>
+                  {t}
+                </a>
+              );
+            })}
+          </nav>
+        </form>
+
+        <div class="bar">
+          <div class="hint">
+            共 <b>{filtered.length}</b> 条
+            {activeTag ? <> · 标签：<b>{activeTag}</b></> : null}
+            {q ? <> · 关键词：<b>{q}</b></> : null}
+          </div>
+
+          {(activeTag || q) && (
+            <a class="clear" href="/notes">清除</a>
+          )}
+        </div>
+
+        <section class="grid" aria-label="笔记列表">
+          {filtered.map((note) => (
+            <NoteCard note={note} />
+          ))}
+        </section>
+      </section>
+    </main>
+  </body>
 </html>

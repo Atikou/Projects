@@ -1,16 +1,147 @@
 ---
+import "../../styles/gamepunk.css";
+import { getCollection, type CollectionEntry } from "astro:content";
 
+const brand = "ATIKOU";
+const pageTitle = "博客";
+const pageSubtitle = "BLOG · Devlog / 复盘 / 灵感";
+
+type BlogEntry = CollectionEntry<"blog">;
+
+type PostItem = {
+  title: string;
+  description: string;
+  date: Date;
+  dateText: string;
+  tags: string[];
+  url: string;
+};
+
+const entries: BlogEntry[] = await getCollection(
+  "blog",
+  (entry: BlogEntry) => !entry.data.draft
+);
+
+const posts: PostItem[] = entries
+  .slice()
+  .sort((a: BlogEntry, b: BlogEntry) => b.data.date.getTime() - a.data.date.getTime())
+  .map((e: BlogEntry): PostItem => ({
+    title: e.data.title,
+    description: e.data.description ?? "",
+    date: e.data.date,
+    dateText: e.data.date.toISOString().slice(0, 10),
+    tags: e.data.tags ?? [],
+    url: `../../content/blog/${e.slug}/`,
+  }));
+
+const recommended: PostItem[] = posts.slice(0, 10);
 ---
 
 <html lang="zh-cn">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Blog</title>
-	</head>
-	<body>
-		<h1>Blog</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{brand} · {pageTitle}</title>
+  </head>
+
+  <body>
+    <div class="fx"></div>
+    <div class="noise"></div>
+
+    <div class="wrap">
+      <header>
+        <a class="logo" href="../" aria-label="Home">
+          <span class="chip" aria-hidden="true"></span>
+          <span>NEON NODE // {brand}</span>
+        </a>
+
+        <nav class="mini-nav" aria-label="Quick nav">
+          <a class="mini" href="../projects/"><span aria-hidden="true">⌬</span> Projects</a>
+          <a class="mini" href="./"><span aria-hidden="true">✶</span> Blog</a>
+          <a class="mini" href="../notes/"><span aria-hidden="true">⌁</span> Notes</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div class="card neon main">
+          <p class="kicker">{pageSubtitle}</p>
+
+          <h1 class="title">
+            <span class="glitch" data-text={pageTitle}>{pageTitle}</span>
+          </h1>
+
+          <p class="desc">
+            当前共 <code>{posts.length}</code> 篇文章（已隐藏 draft）。
+          </p>
+
+          <div class="cta">
+            <a class="btn primary" href="../"><span class="dot" aria-hidden="true"></span>返回首页</a>
+            <a class="btn" href="../notes/"><span class="dot" aria-hidden="true"></span>去看笔记</a>
+          </div>
+
+          <div class="grid" aria-label="Posts">
+            {posts.length === 0 ? (
+              <div class="nav" style="grid-column: span 12;">
+                <div class="top">
+                  <h2 class="cn">暂无文章</h2>
+                  <p class="en">EMPTY</p>
+                </div>
+                <p class="hint">
+                  在 <code>src/content/blog/</code> 新建 md，并填好 <code>title / date</code>。
+                </p>
+              </div>
+            ) : (
+              posts.map((p: PostItem) => (
+                <a class="nav" href={p.url}>
+                  <div class="top">
+                    <h2 class="cn">{p.title}</h2>
+                    <p class="en">{p.dateText}</p>
+                  </div>
+                  <p class="hint">
+                    {p.description || "（暂无简介）"}
+                    {p.tags.length > 0 ? (
+                      <>
+                        <br />
+                        <span style="opacity:.8;">#{p.tags.slice(0, 3).join(" #")}</span>
+                      </>
+                    ) : null}
+                  </p>
+                </a>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div class="side-stack">
+          <aside class="card side">
+            <div class="poster" aria-label="Blog artwork placeholder"></div>
+            <p>
+              文章来自 <code>src/content/blog</code>。
+              <br />
+              建议都写 <code>description/tags</code>，列表更好看。
+            </p>
+          </aside>
+
+          <aside class="card side recommend" aria-label="Recommendations">
+            <h3 class="rec-title">推荐阅读</h3>
+            <ul class="rec-list">
+              {recommended.length === 0 ? (
+                <li><a href="#">暂无推荐</a></li>
+              ) : (
+                recommended.map((p: PostItem) => (
+                  <li><a href={p.url}>📘 {p.title}</a></li>
+                ))
+              )}
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <footer>
+        <div>© {new Date().getFullYear()} {brand} · Built with Astro</div>
+        <div>邮箱 <a href="mailto:formcyy@outlook.com">formcyy@outlook.com</a></div>
+      </footer>
+    </div>
+  </body>
 </html>
