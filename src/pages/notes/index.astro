@@ -33,7 +33,7 @@ const notes: Note[] = entries
     })
   );
 
-  console.log(notes[0].slug)
+console.log(notes[0].slug);
 const tags = Array.from(new Set(notes.flatMap((n) => n.tags))).sort((a, b) =>
   a.localeCompare(b, "zh-Hans-CN")
 );
@@ -53,7 +53,7 @@ const activeTag = (url.searchParams.get("tag") ?? "").trim();
       name="description"
       content="项目/设计/工程/流程相关的游戏开发笔记。"
     />
-    <link rel="stylesheet" href="/src/styles/notes.css" />
+    <link rel="stylesheet" href="../../src/styles/notes.css" />
   </head>
   <body>
     <div class="bg" aria-hidden="true"></div>
@@ -88,7 +88,7 @@ const activeTag = (url.searchParams.get("tag") ?? "").trim();
           <nav class="chips" aria-label="标签筛选">
             <a
               class={`chip ${!activeTag ? "active" : ""}`}
-              href={`/notes${q ? `?q=${encodeURIComponent(q)}` : ""}`}
+              href={`./${q ? `?q=${encodeURIComponent(q)}` : ""}`}
             >
               全部
             </a>
@@ -101,7 +101,7 @@ const activeTag = (url.searchParams.get("tag") ?? "").trim();
                 return (
                   <a
                     class={`chip ${activeTag === t ? "active" : ""}`}
-                    href={`/notes?${params.toString()}`}
+                    href={`./?${params.toString()}`}
                   >
                     {t}
                   </a>
@@ -134,7 +134,7 @@ const activeTag = (url.searchParams.get("tag") ?? "").trim();
 
           {
             (activeTag || q) && (
-              <a class="clear" href="../../content/blog/">
+              <a class="clear" href="./">
                 清除
               </a>
             )

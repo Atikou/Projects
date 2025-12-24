@@ -14,7 +14,10 @@ const toDate = (v: unknown): Date | null => {
 };
 
 export async function getStaticPaths() {
-  const entries: NoteEntry[] = await getCollection("notes", (e: NoteEntry) => !e.data.draft);
+  const entries: NoteEntry[] = await getCollection(
+    "notes",
+    (e: NoteEntry) => !e.data.draft
+  );
   return entries.map((entry) => ({
     params: { slug: entry.slug },
     props: { entry },
@@ -31,7 +34,10 @@ const dateText = date ? date.toLocaleDateString("zh-CN") : "";
 const tags: string[] = entry.data.tags ?? [];
 
 // 左侧列表
-const all: NoteEntry[] = await getCollection("notes", (e: NoteEntry) => !e.data.draft);
+const all: NoteEntry[] = await getCollection(
+  "notes",
+  (e: NoteEntry) => !e.data.draft
+);
 all.sort(
   (a, b) =>
     (toDate(b.data.date)?.getTime() ?? 0) -
@@ -45,14 +51,16 @@ const currentSlug = entry.slug;
   <Fragment slot="sidebar">
     <p class="s-title">Notes</p>
     <nav class="md-nav">
-      {all.map((n) => (
-        <a
-          href={`/notes/${n.slug}/`}
-          class={n.slug === currentSlug ? "is-active" : ""}
-        >
-          {n.data.title}
-        </a>
-      ))}
+      {
+        all.map((n) => (
+          <a
+            href={`./${n.slug === currentSlug ? "" : `../${n.slug}/`}`}
+            class={n.slug === currentSlug ? "is-active" : ""}
+          >
+            {n.data.title}
+          </a>
+        ))
+      }
     </nav>
   </Fragment>
 
@@ -66,9 +74,7 @@ const currentSlug = entry.slug;
 
       <div class="md-meta">
         <div class="md-tags">
-          {tags.map((t) => (
-            <span class="md-tag">{t}</span>
-          ))}
+          {tags.map((t) => <span class="md-tag">{t}</span>)}
         </div>
 
         {dateText && <span class="md-date">{dateText}</span>}
