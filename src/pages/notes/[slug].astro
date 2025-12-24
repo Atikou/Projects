@@ -1,0 +1,91 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import MarkdownLayout from "../../layouts/MarkdownLayout.astro";
+
+type NoteEntry = CollectionEntry<"notes">;
+
+const BRAND = "Atikou";
+
+const toDate = (v: unknown): Date | null => {
+  if (v instanceof Date) return v;
+  if (v == null) return null;
+  const d = new Date(v as any);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+export async function getStaticPaths() {
+  const entries: NoteEntry[] = await getCollection("notes", (e: NoteEntry) => !e.data.draft);
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props as { entry: NoteEntry };
+const { Content } = await entry.render();
+
+const title = entry.data.title;
+const description = entry.data.description ?? "";
+const date = toDate(entry.data.date);
+const dateText = date ? date.toLocaleDateString("zh-CN") : "";
+const tags: string[] = entry.data.tags ?? [];
+
+// 左侧列表
+const all: NoteEntry[] = await getCollection("notes", (e: NoteEntry) => !e.data.draft);
+all.sort(
+  (a, b) =>
+    (toDate(b.data.date)?.getTime() ?? 0) -
+    (toDate(a.data.date)?.getTime() ?? 0)
+);
+const currentSlug = entry.slug;
+---
+
+<MarkdownLayout title={title} description={description}>
+  <!-- 左侧 -->
+  <Fragment slot="sidebar">
+    <p class="s-title">Notes</p>
+    <nav class="md-nav">
+      {all.map((n) => (
+        <a
+          href={`/notes/${n.slug}/`}
+          class={n.slug === currentSlug ? "is-active" : ""}
+        >
+          {n.data.title}
+        </a>
+      ))}
+    </nav>
+  </Fragment>
+
+  <!-- 右侧：统一居中列 -->
+  <article class="md-article">
+    <!-- 标题区（肯定在正文上方） -->
+    <header class="md-hero">
+      <h1 class="md-title">{title}</h1>
+
+      {description && <p class="md-desc">{description}</p>}
+
+      <div class="md-meta">
+        <div class="md-tags">
+          {tags.map((t) => (
+            <span class="md-tag">{t}</span>
+          ))}
+        </div>
+
+        {dateText && <span class="md-date">{dateText}</span>}
+      </div>
+    </header>
+
+    <!-- 正文 -->
+    <section class="md-content">
+      <Content />
+    </section>
+
+    <!-- 页脚：紧跟 markdown 结束 -->
+    <footer class="md-footer">
+      <div>© {new Date().getFullYear()} {BRAND} · Built with Astro</div>
+      <div>
+        邮箱 <a href="mailto:formcyy@outlook.com">formcyy@outlook.com</a>
+      </div>
+    </footer>
+  </article>
+</MarkdownLayout>

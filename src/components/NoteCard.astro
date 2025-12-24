@@ -2,10 +2,10 @@
 export type Note = {
   title: string;
   slug: string;
-  summary: string;
+  description: string;
   cover: string;
-  tags: readonly string[];
-  date: string; // ISO: YYYY-MM-DD
+  tags: string[];
+  date: Date; // ISO: YYYY-MM-DD
 };
 
 type Props = {
@@ -15,18 +15,20 @@ type Props = {
 const { note } = Astro.props as Props;
 ---
 
-<a class="card" href={`/notes/${note.slug}`}>
+<a class="card"  href={`/notes/${note.slug}/`}>
   <div class="cover">
     <img src={note.cover} alt={note.title} loading="lazy" decoding="async" />
     <div class="shade" aria-hidden="true"></div>
     <div class="meta">
-      <span class="date">{new Date(note.date).toLocaleDateString("zh-CN")}</span>
+      <span class="date">{note.date.toLocaleDateString("zh-CN")}</span>
+      <span class="date">{note.date.toLocaleDateString("zh-CN")}</span>
+
     </div>
   </div>
 
   <div class="body">
     <h3 class="title">{note.title}</h3>
-    <p class="summary">{note.summary}</p>
+    <p class="description">{note.description}</p>
 
     <div class="tags" aria-label="tags">
       {note.tags.map((t) => (

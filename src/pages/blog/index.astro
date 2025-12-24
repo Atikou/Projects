@@ -21,15 +21,19 @@ const entries: BlogEntry[] = await getCollection(
   "blog",
   (entry: BlogEntry) => !entry.data.draft
 );
-
+const toDate = (v: unknown): Date => {
+  if (v instanceof Date) return v;
+  const d = new Date(v as any);
+  return Number.isNaN(d.getTime()) ? new Date(0) : d;
+};
 const posts: PostItem[] = entries
   .slice()
   .sort((a: BlogEntry, b: BlogEntry) => b.data.date.getTime() - a.data.date.getTime())
   .map((e: BlogEntry): PostItem => ({
     title: e.data.title,
     description: e.data.description ?? "",
-    date: e.data.date,
-    dateText: e.data.date.toISOString().slice(0, 10),
+    date: toDate(e.data.date),
+    dateText: toDate(e.data.date).toISOString().slice(0, 10),
     tags: e.data.tags ?? [],
     url: `../../content/blog/${e.slug}/`,
   }));

@@ -1,10 +1,12 @@
 ---
-title: "Hello Astro Blog"
-description: "这是用于测试博客列表与详情页渲染是否正常的一篇示例文章。"
-date: "2025-01-15"
-tags: ["Astro", "Blog", "Test"]
+title: "test"
+description: "这是一篇测试文章"
+cover: "hello"
+tags: ["a"]
+date: "2025-12-01"
 draft: false
 ---
+
 
 # Hello Astro 👋
 

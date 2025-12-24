@@ -1,0 +1,30 @@
+---
+import "../styles/markdown.css";
+
+type Props = {
+  title: string;
+  description?: string;
+};
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+  </head>
+
+  <body class="md-page">
+    <aside class="md-sidebar">
+      <slot name="sidebar" />
+    </aside>
+
+    <main class="md-main">
+      <slot />
+    </main>
+  </body>
+</html>
