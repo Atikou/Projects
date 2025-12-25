@@ -260,3 +260,56 @@
     max-width: 100%;
   }
 }
+
+/* ================= Markdown 代码块最终样式（覆盖默认） ================= */
+
+.md-content :global(pre) {
+  position: relative;
+  margin: 20px 0;
+  padding: 3rem 1.25rem 1.25rem; /* 顶部给语言/复制按钮 */
+  background: #f6f8fa;          /* 浅灰色（和我对话里一致） */
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 12px;          /* 圆角 */
+  overflow: auto;
+}
+
+/* code 本体不再单独有背景 */
+.md-content :global(pre code) {
+  background: transparent;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(0, 0, 0, 0.86);
+}
+
+/* 左上角语言标签 */
+.md-content :global(pre .md-code-lang) {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.10);
+  color: rgba(0, 0, 0, 0.70);
+  text-transform: lowercase;
+  user-select: none;
+}
+
+/* 右上角复制按钮 */
+.md-content :global(pre .md-code-copy) {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.10);
+  color: rgba(0, 0, 0, 0.70);
+  cursor: pointer;
+}
+
+.md-content :global(pre .md-code-copy:hover) {
+  background: rgba(0, 0, 0, 0.18);
+}

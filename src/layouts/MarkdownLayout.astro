@@ -16,7 +16,43 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
-  </head>
+    <script is:inline>
+      function enhanceMarkdownCode() {
+        document.querySelectorAll(".md-content pre").forEach((pre) => {
+          if (pre.dataset.enhanced) return;
+          pre.dataset.enhanced = "1";
+
+          // 语言
+          const code = pre.querySelector("code");
+          const langClass =
+            code && [...code.classList].find((c) => c.startsWith("language-"));
+          if (langClass) {
+            const lang = document.createElement("span");
+            lang.className = "md-code-lang";
+            lang.textContent = langClass.replace("language-", "");
+            pre.appendChild(lang);
+          }
+
+          // 复制按钮
+          const btn = document.createElement("button");
+          btn.className = "md-code-copy";
+          btn.textContent = "复制";
+          btn.onclick = async () => {
+            try {
+              await navigator.clipboard.writeText(code.innerText);
+              btn.textContent = "已复制";
+              setTimeout(() => (btn.textContent = "复制"), 1200);
+            } catch {
+              btn.textContent = "失败";
+            }
+          };
+          pre.appendChild(btn);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", enhanceMarkdownCode);
+    </script></head
+  >
 
   <body class="md-page">
     <aside class="md-sidebar">
