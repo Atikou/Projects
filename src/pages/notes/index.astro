@@ -41,8 +41,6 @@ const notes: Note[] = entries
     };
   });
 
-
-console.log(notes[0].slug);
 const tags = Array.from(new Set(notes.flatMap((n) => n.tags))).sort((a, b) =>
   a.localeCompare(b, "zh-Hans-CN")
 );
