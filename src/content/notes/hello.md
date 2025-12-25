@@ -1,7 +1,7 @@
 ---
 title: "test"
 description: "这是一篇测试文章"
-cover: /notes/test.jpg
+cover: notes/test.jpg
 tags: ["a"]
 date: "2025-12-01"
 draft: false
