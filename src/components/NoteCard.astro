@@ -13,16 +13,32 @@ type Props = {
 };
 
 const { note } = Astro.props as Props;
+
+// GitHub Pages 子路径（base）兼容：比如 "/repo-name/"
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const href = `${base}${note.slug}/`;
+
+// 封面：外链不动；以 / 开头的本地资源补 base
+const cover =
+  note.cover && note.cover.startsWith("/") ?  `${base}${note.cover}` : note.cover;
+
+// 日期兜底
+const dateText =
+  note.date instanceof Date && !Number.isNaN(note.date.getTime())
+    ? note.date.toLocaleDateString("zh-CN")
+    : "";
 ---
 
-<a class="card"  href={`/notes/${note.slug}/`}>
+<a class="card" href={href}>
   <div class="cover">
-    <img src={note.cover} alt={note.title} loading="lazy" decoding="async" />
+    {cover && (
+      <img src={cover} alt={note.title} loading="lazy" decoding="async" />
+    )}
     <div class="shade" aria-hidden="true"></div>
-    <div class="meta">
-      <span class="date">{note.date.toLocaleDateString("zh-CN")}</span>
-      <span class="date">{note.date.toLocaleDateString("zh-CN")}</span>
 
+    <div class="meta">
+      {dateText && <span class="date">{dateText}</span>}
     </div>
   </div>
 

@@ -22,18 +22,25 @@ const notes: Note[] = entries
   .slice()
   .sort(
     (a: NoteEntry, b: NoteEntry) =>
-      b.data.date.getTime() - a.data.date.getTime()
+      toDate(b.data.date).getTime() - toDate(a.data.date).getTime()
   )
-  .map(
-    (e: NoteEntry): Note => ({
+  .map((e: NoteEntry): Note => {
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    const cover =
+      e.data.cover && e.data.cover.startsWith("/")
+        ? `${base}${e.data.cover}`
+        : e.data.cover;
+
+    return {
       title: e.data.title,
       slug: e.slug,
       description: e.data.description ?? "",
-      cover: e.data.cover,
+      cover,
       tags: e.data.tags ?? [],
       date: toDate(e.data.date),
-    })
-  );
+    };
+  });
+
 
 console.log(notes[0].slug);
 const tags = Array.from(new Set(notes.flatMap((n) => n.tags))).sort((a, b) =>
