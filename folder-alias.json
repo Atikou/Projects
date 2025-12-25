@@ -22,5 +22,14 @@
     },
     "src/content": {
         "description": "markdown"
+    },
+    "src/public": {
+        "description": "projects"
+    },
+    "src/styles": {
+        "description": "css样式"
+    },
+    "src/pages": {
+        "description": "页面"
     }
 }

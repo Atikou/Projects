@@ -3,6 +3,8 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import NoteCard from "../../components/NoteCard.astro";
 import type { Note } from "../../components/NoteCard.astro";
 
+import "../../styles/notes.css";
+
 type NoteEntry = CollectionEntry<"notes">;
 
 const entries: CollectionEntry<"notes">[] = await getCollection(
@@ -53,7 +55,6 @@ const activeTag = (url.searchParams.get("tag") ?? "").trim();
       name="description"
       content="项目/设计/工程/流程相关的游戏开发笔记。"
     />
-    <link rel="stylesheet" href="../../src/styles/notes.css" />
   </head>
   <body>
     <div class="bg" aria-hidden="true"></div>
