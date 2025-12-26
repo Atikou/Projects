@@ -21,7 +21,7 @@ const href = `${base}${note.slug}/`;
 console.log(href)
 
 // 封面：外链不动；以 / 开头的本地资源补 base
-const cover = note.cover ? `${base}/${note.cover}` : "";
+const cover = note.cover ? `${note.cover}` : "";
 
 // 日期兜底
 const dateText =
