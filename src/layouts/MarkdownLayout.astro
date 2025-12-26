@@ -4,9 +4,12 @@ import "../styles/markdown.css";
 type Props = {
   title: string;
   description?: string;
+  tags?: string[];
+  dateText?: string;
+  brand?: string;
 };
 
-const { title, description } = Astro.props;
+const { title, description, tags = [], dateText, brand = "Astro" } = Astro.props;
 ---
 
 <!doctype html>
@@ -15,44 +18,89 @@ const { title, description } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    {description ? <meta name="description" content={description} /> : null}
+
     <script is:inline>
+      function getLangFromPre(pre) {
+        const dl = pre.getAttribute("data-language");
+        if (dl && dl.trim()) return dl.trim();
+
+        const code = pre.querySelector("code");
+        if (!code) return "";
+        const cls = code.className || "";
+        const m = cls.match(/language-([a-z0-9-]+)/i);
+        return m && m[1] ? m[1] : "";
+      }
+
       function enhanceMarkdownCode() {
-        document.querySelectorAll(".md-content pre").forEach((pre) => {
-          if (pre.dataset.enhanced) return;
+        const pres = document.querySelectorAll("pre");
+
+        pres.forEach((pre) => {
+          if (pre.dataset.enhanced === "1") return;
           pre.dataset.enhanced = "1";
 
-          // 语言
           const code = pre.querySelector("code");
-          const langClass =
-            code && [...code.classList].find((c) => c.startsWith("language-"));
-          if (langClass) {
-            const lang = document.createElement("span");
-            lang.className = "md-code-lang";
-            lang.textContent = langClass.replace("language-", "");
-            pre.appendChild(lang);
-          }
+          if (!code) return;
 
-          // 复制按钮
+          // 外层灰框
+          const wrap = document.createElement("div");
+          wrap.className = "md-code-wrap";
+
+          // 顶部栏
+          const head = document.createElement("div");
+          head.className = "md-code-head";
+
+          // 左：语言
+          const langRaw = (getLangFromPre(pre) || "").toLowerCase();
+          const langText = langRaw && langRaw !== "plaintext" ? langRaw.toUpperCase() : "CODE";
+
+          const langEl = document.createElement("div");
+          langEl.className = "md-code-lang";
+          langEl.textContent = langText;
+
+          // 右：复制按钮（带图标）
           const btn = document.createElement("button");
+          btn.type = "button";
           btn.className = "md-code-copy";
-          btn.textContent = "复制";
-          btn.onclick = async () => {
+
+          const icon = document.createElement("img");
+          icon.className = "md-code-copy-icon";
+          icon.src = "/icons/copy.png";
+          icon.alt = "copy";
+
+          const label = document.createElement("span");
+          label.textContent = "复制";
+
+          btn.appendChild(icon);
+          btn.appendChild(label);
+
+          btn.addEventListener("click", async () => {
+            const text = code.textContent || "";
             try {
-              await navigator.clipboard.writeText(code.innerText);
-              btn.textContent = "已复制";
-              setTimeout(() => (btn.textContent = "复制"), 1200);
+              await navigator.clipboard.writeText(text);
+              label.textContent = "已复制";
+              window.setTimeout(() => (label.textContent = "复制"), 900);
             } catch {
-              btn.textContent = "失败";
+              label.textContent = "失败";
+              window.setTimeout(() => (label.textContent = "复制"), 900);
             }
-          };
-          pre.appendChild(btn);
+          });
+
+          head.appendChild(langEl);
+          head.appendChild(btn);
+
+          // 用 wrap 替换 pre 的位置
+          const parent = pre.parentNode;
+          if (!parent) return;
+          parent.insertBefore(wrap, pre);
+          wrap.appendChild(head);
+          wrap.appendChild(pre);
         });
       }
 
       document.addEventListener("DOMContentLoaded", enhanceMarkdownCode);
-    </script></head
-  >
+    </script>
+  </head>
 
   <body class="md-page">
     <aside class="md-sidebar">
@@ -60,7 +108,15 @@ const { title, description } = Astro.props;
     </aside>
 
     <main class="md-main">
-      <slot />
+      <article class="md-article">
+       
+
+        <section class="md-content">
+          <slot />
+        </section>
+
+        
+      </article>
     </main>
   </body>
 </html>

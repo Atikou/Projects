@@ -16,7 +16,7 @@ draft: false
 GitPage上的路径非常反人类，只能用相对路径，导致本地运行没毛病一上传就找不到路径。
 1. 路径一定不能 **/** 开头
 2. **astro.config.mjs** 里面一定要检查环境比如
-```
+```js
 import { defineConfig } from "astro/config";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -25,4 +25,3 @@ export default defineConfig({
   site: "https://atikou.github.io",
   base: isProd ? "/Projects/" : "/",
 });
-```
