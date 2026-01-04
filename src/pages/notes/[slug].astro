@@ -1,7 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from "astro:content";
 import MarkdownLayout from "../../layouts/MarkdownLayout.astro";
-
+import "../../styles/notes.css";
 type NoteEntry = CollectionEntry<"notes">;
 
 const BRAND = "Atikou";
@@ -44,6 +44,8 @@ all.sort(
     (toDate(a.data.date)?.getTime() ?? 0)
 );
 const currentSlug = entry.slug;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const noteHref = (slug: string) => `${base}/notes/${slug}/`;
 ---
 
 <MarkdownLayout title={title} description={description}>
@@ -54,7 +56,7 @@ const currentSlug = entry.slug;
       {
         all.map((n) => (
           <a
-            href={`./${n.slug === currentSlug ? "" : `../${n.slug}/`}`}
+            href={noteHref(n.slug)}
             class={n.slug === currentSlug ? "is-active" : ""}
           >
             {n.data.title}
