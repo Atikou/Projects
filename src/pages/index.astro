@@ -1,121 +1,73 @@
 ---
-import "../styles/gamepunk.css";
-const brand = "ATIKOU";
-const subtitle = "CYBERPUNK PORTFOLIO · BLOG · DEV NOTES";
-const nav = [
-  { href: "projects/", label: "项目", en: "PROJECTS", hint: "作品集 / Demo / 原型" },
-  { href: "blogs/", label: "文章", en: "BLOG", hint: "复盘 / 技术 / 灵感" },
-  { href: "notes/", label: "笔记", en: "NOTES", hint: "开发记录 / 备忘" },
-];
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+type BlogEntry = CollectionEntry<"blog">;
+type NoteEntry = CollectionEntry<"notes">;
+type ProjectEntry = CollectionEntry<"projects">;
+
+const blogs: BlogEntry[] = await getCollection("blog", (entry: BlogEntry) => !entry.data.draft);
+const notes: NoteEntry[] = await getCollection("notes", (entry: NoteEntry) => !entry.data.draft);
+const projects: ProjectEntry[] = await getCollection("projects", (entry: ProjectEntry) => !entry.data.draft);
+
+const toDate = (value: unknown): Date => {
+  if (value instanceof Date) return value;
+  const date = new Date(value as string);
+  return Number.isNaN(date.getTime()) ? new Date(0) : date;
+};
+
+const latestBlogs = blogs
+  .slice()
+  .sort((a: BlogEntry, b: BlogEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime())
+  .slice(0, 5);
 ---
 
-<html lang="zh-cn">
-  <head>
-    <meta charset="utf-8" />
-    <!-- GitHub Pages 项目页下避免绝对路径：不要写 /favicon.svg -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{brand}</title>
+<BaseLayout title="首页 | My Blog" description="一个基于 Astro 的博客站点" currentPath="/">
+  <header class="page-header">
+    <h1>欢迎来到我的博客</h1>
+    <p>这里收录博客文章、开发笔记和项目记录，所有内容均来自现有 Markdown 文件。</p>
+  </header>
 
-  </head>
+  <section class="section-grid">
+    <article class="section-panel">
+      <h2>最新博客</h2>
+      <p>最近发布的文章会优先显示在这里。</p>
+      {latestBlogs.length === 0 ? (
+        <p>暂无博客文章。</p>
+      ) : (
+        <ul class="post-list">
+          {
+            latestBlogs.map((post: BlogEntry) => (
+              <li>
+                <a class="post-card" href={`${import.meta.env.BASE_URL}blogs/${post.slug}/`}>
+                  <h3>{post.data.title}</h3>
+                  <div class="post-meta">
+                    <span>{toDate(post.data.date).toISOString().slice(0, 10)}</span>
+                    {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+                  </div>
+                  {post.data.description && <p class="post-excerpt">{post.data.description}</p>}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      )}
+      <p><a href={`${import.meta.env.BASE_URL}blogs/`}>查看全部博客</a></p>
+    </article>
 
-  <body>
-    <div class="fx"></div>
-    <div class="noise"></div>
-
-    <div class="wrap">
-      <header>
-        <a class="logo" href="./" aria-label="Home">
-          <span class="chip" aria-hidden="true"></span>
-          <span>NEON NODE // {brand}</span>
-        </a>
-
-        <nav class="mini-nav" aria-label="Quick nav">
-          <a class="mini" href="projects/"><span aria-hidden="true">⌬</span> Projects</a>
-          <a class="mini" href="blogs/"><span aria-hidden="true">✶</span> Blog</a>
-          <a class="mini" href="notes/"><span aria-hidden="true">⌁</span> Notes</a>
-        </nav>
-      </header>
-
-      <section class="hero">
-        <div class="card neon main">
-          <p class="kicker">{subtitle}</p>
-
-          <h1 class="title">
-            <span class="glitch" data-text={brand}>{brand}</span>
-          </h1>
-
-          <p class="desc">
-            展示作品集、记录开发过程、写下技术与灵感。
-            <br />
-            入口都在下面：<code>projects/</code> · <code>blog/</code> · <code>notes/</code>
-          </p>
-
-          <div class="cta">
-            <a class="btn primary" href="projects/"><span class="dot" aria-hidden="true"></span>进入项目</a>
-            <a class="btn" href="blogs/"><span class="dot" aria-hidden="true"></span>阅读文章</a>
-            <a class="btn" href="notes/"><span class="dot" aria-hidden="true"></span>打开笔记</a>
-          </div>
-
-          <div class="grid" aria-label="Sections">
-            {nav.map((n) => (
-              <a class="nav" href={n.href}>
-                <div class="top">
-                  <h2 class="cn">{n.label}</h2>
-                  <p class="en">{n.en}</p>
-                </div>
-                <p class="hint">{n.hint}</p>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        <!-- 右侧：两个卡片纵向堆叠 -->
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <aside class="card side">
-            <!--
-              TODO: 将来替换为你的作品海报/封面：
-              1) 把图片放到 public/images/hero.jpg
-              2) 把下面这个 div.poster 替换为：
-                 <img src="images/hero.jpg" alt="Hero artwork"
-                      style="width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.12);" />
-            -->
-            <div class="poster" aria-label="Artwork placeholder"></div>
-
-            <p>
-              占位海报已就位。后续把封面图放进 <code>public/images</code> 就能替换。
-              <br />
-              小提示：部署在 GitHub Pages 项目页时，链接尽量用相对路径更稳。
-            </p>
-          </aside>
-
-          <!-- 可滚动推荐列表 -->
-          <aside class="card side recommend" aria-label="Recommendations">
-            <h3 class="rec-title">推荐阅读</h3>
-
-            <ul class="rec-list">
-              <li><a href="#">📘 博客 · Astro + GitHub Pages 部署记录</a></li>
-              <li><a href="#">📗 笔记 · Flex 布局速查表</a></li>
-              <li><a href="#">📘 博客 · 赛博风 UI 设计拆解</a></li>
-              <li><a href="#">📗 笔记 · CSS Grid 常见坑位</a></li>
-              <li><a href="#">📘 博客 · 个人站点性能优化清单</a></li>
-              <li><a href="#">📗 笔记 · JavaScript 小技巧合集</a></li>
-              <li><a href="#">📘 博客 · 暗色主题可读性实践</a></li>
-              <li><a href="#">📗 笔记 · 前端项目结构模板</a></li>
-              <li><a href="#">📘 博客 · 可访问性 A11y 快速检查</a></li>
-              <li><a href="#">📗 笔记 · 常用动画 easing 备忘</a></li>
-            </ul>
-          </aside>
-        </div>
-      </section>
-
-      <footer>
-        <div>© {new Date().getFullYear()} {brand} · Built with Astro</div>
-        <div>
-          邮箱 <a href="mailto:formcyy@outlook.com">formcyy@outlook.com</a>
-        </div>
-      </footer>
-    </div>
-  </body>
-</html>
+    <article class="section-panel">
+      <h2>内容概览</h2>
+      <p>当前站点内容统计如下：</p>
+      <ul>
+        <li>博客：{blogs.length} 篇</li>
+        <li>笔记：{notes.length} 篇</li>
+        <li>项目：{projects.length} 篇</li>
+      </ul>
+      <p>
+        <a href={`${import.meta.env.BASE_URL}notes/`}>浏览笔记</a> ·
+        {" "}
+        <a href={`${import.meta.env.BASE_URL}projects/`}>浏览项目</a>
+      </p>
+    </article>
+  </section>
+</BaseLayout>

@@ -1,123 +1,40 @@
 ---
+import BaseLayout from "./BaseLayout.astro";
 import "../styles/markdown.css";
-import "../styles/notes.css";
 
 type Props = {
   title: string;
   description?: string;
-  tags?: string[];
   dateText?: string;
-  brand?: string;
+  tags?: string[];
+  currentPath?: string;
 };
 
-const { title, description, tags = [], dateText, brand = "Astro" } = Astro.props;
+const {
+  title,
+  description = "",
+  dateText = "",
+  tags = [],
+  currentPath = "/",
+} = Astro.props as Props;
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    {description ? <meta name="description" content={description} /> : null}
-
-    <script is:inline>
-      function getLangFromPre(pre) {
-        const dl = pre.getAttribute("data-language");
-        if (dl && dl.trim()) return dl.trim();
-
-        const code = pre.querySelector("code");
-        if (!code) return "";
-        const cls = code.className || "";
-        const m = cls.match(/language-([a-z0-9-]+)/i);
-        return m && m[1] ? m[1] : "";
-      }
-
-      function enhanceMarkdownCode() {
-        const pres = document.querySelectorAll("pre");
-
-        pres.forEach((pre) => {
-          if (pre.dataset.enhanced === "1") return;
-          pre.dataset.enhanced = "1";
-
-          const code = pre.querySelector("code");
-          if (!code) return;
-
-          // 外层灰框
-          const wrap = document.createElement("div");
-          wrap.className = "md-code-wrap";
-
-          // 顶部栏
-          const head = document.createElement("div");
-          head.className = "md-code-head";
-
-          // 左：语言
-          const langRaw = (getLangFromPre(pre) || "").toLowerCase();
-          const langText = langRaw && langRaw !== "plaintext" ? langRaw.toUpperCase() : "CODE";
-
-          const langEl = document.createElement("div");
-          langEl.className = "md-code-lang";
-          langEl.textContent = langText;
-
-          // 右：复制按钮（带图标）
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "md-code-copy";
-
-          const icon = document.createElement("img");
-          icon.className = "md-code-copy-icon";
-          icon.src = "/icons/copy.png";
-          icon.alt = "copy";
-
-          const label = document.createElement("span");
-          label.textContent = "复制";
-
-          btn.appendChild(icon);
-          btn.appendChild(label);
-
-          btn.addEventListener("click", async () => {
-            const text = code.textContent || "";
-            try {
-              await navigator.clipboard.writeText(text);
-              label.textContent = "已复制";
-              window.setTimeout(() => (label.textContent = "复制"), 900);
-            } catch {
-              label.textContent = "失败";
-              window.setTimeout(() => (label.textContent = "复制"), 900);
-            }
-          });
-
-          head.appendChild(langEl);
-          head.appendChild(btn);
-
-          // 用 wrap 替换 pre 的位置
-          const parent = pre.parentNode;
-          if (!parent) return;
-          parent.insertBefore(wrap, pre);
-          wrap.appendChild(head);
-          wrap.appendChild(pre);
-        });
-      }
-
-      document.addEventListener("DOMContentLoaded", enhanceMarkdownCode);
-    </script>
-  </head>
-
-  <body class="md-page">
-    <aside class="md-sidebar">
-      <slot name="sidebar" />
-    </aside>
-
-    <main class="md-main">
-      <article class="md-article">
-       
-
-        <section class="md-content">
-          <slot />
-        </section>
-
-        
-      </article>
-    </main>
-  </body>
-</html>
+<BaseLayout title={title} description={description} currentPath={currentPath}>
+  <article class="post-article">
+    <header class="post-header">
+      <h1>{title}</h1>
+      {description && <p class="post-subtitle">{description}</p>}
+      <div class="post-meta">
+        {dateText && <span>{dateText}</span>}
+        {
+          tags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))
+        }
+      </div>
+    </header>
+    <section class="post-content">
+      <slot />
+    </section>
+  </article>
+</BaseLayout>

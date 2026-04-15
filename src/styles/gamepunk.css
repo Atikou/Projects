@@ -1,348 +1,203 @@
-:root{
-  color-scheme: light;
-
-  --bg0:#f4f6fa;
-  --bg1:#eef1f7;
-
-  --ink:#1c2430;
-  --mut:#5f6b7a;
-
-  --line:#d6dde8;
-  --line2:#e6ebf2;
-
-  /* 游戏 UI 常用强调色 */
-  --blue:#3b82f6;
-  --green:#22c55e;
-  --orange:#f59e0b;
-  --purple:#8b5cf6;
-
-  --shadow: rgba(30,40,60,.12);
+:root {
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --primary: #2563eb;
+  --primary-soft: #dbeafe;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-
-body{
-  margin:0;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial;
-  color:var(--ink);
-
-  background:
-    linear-gradient(180deg, var(--bg0), var(--bg1));
-
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
+* {
+  box-sizing: border-box;
 }
 
-/* 亮色模式下弱化特效 */
-.fx,.noise{display:none;}
-
-.wrap{
-  max-width:1120px;
-  margin:0 auto;
-  padding:28px 18px 24px;
-  width:100%;
-
-  flex:1;
-  display:flex;
-  flex-direction:column;
+html,
+body {
+  margin: 0;
+  min-height: 100%;
 }
 
-/* ===== Header ===== */
-
-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 0 18px;
+body {
+  font-family: Inter, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.65;
 }
 
-.logo{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  text-decoration:none;
-  color:inherit;
+a {
+  color: inherit;
 }
 
-.chip{
-  width:14px;
-  height:14px;
-  border-radius:4px;
-  background: linear-gradient(135deg, var(--blue), var(--purple));
+.container {
+  width: min(900px, 92vw);
+  margin: 0 auto;
 }
 
-.logo span{
-  font-size:12px;
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  color:#3a4657;
+.site-header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-/* 顶部菜单 = 启动器按钮 */
-
-.mini-nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+.header-inner {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.mini{
-  padding:8px 12px;
-  border-radius:8px;
-  border:1px solid var(--line);
-  background:#fff;
-  text-decoration:none;
-  color:#334155;
-  font-size:13px;
-
-  transition: background .15s ease, border-color .15s ease;
+.site-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.mini:hover{
-  background:#f1f5f9;
-  border-color:#c7d2fe;
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-/* ===== 主体布局不变 ===== */
-
-.hero{
-  display:grid;
-  grid-template-columns:1.2fr .8fr;
-  gap:16px;
-}
-@media (max-width:860px){
-  .hero{grid-template-columns:1fr;}
+.site-nav a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 6px 10px;
+  border-radius: 999px;
 }
 
-/* ===== 面板卡片（游戏 UI 核心） ===== */
-
-.card{
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:#fff;
-  box-shadow:0 10px 28px var(--shadow);
-  position:relative;
+.site-nav a:hover {
+  background: #f3f4f6;
+  color: var(--text);
 }
 
-.card.neon::before{display:none;}
-
-.main{
-  padding:24px 22px;
+.site-nav a.active {
+  background: var(--primary-soft);
+  color: var(--primary);
 }
 
-/* ===== 标题区域 ===== */
-
-.kicker{
-  margin:0 0 8px;
-  font-size:12px;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  color:#64748b;
+.page-content {
+  padding: 44px 0 56px;
 }
 
-.title{
-  margin:0 0 10px;
-  font-size: clamp(32px, 5vw, 52px);
-  line-height:1.05;
-  font-weight:700;
+.page-header {
+  margin-bottom: 24px;
 }
 
-.glitch::before,
-.glitch::after{
-  display:none;
+.page-header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
 }
 
-.desc{
-  margin:0;
-  font-size:15px;
-  line-height:1.8;
-  color:var(--mut);
-  max-width:64ch;
+.page-header p {
+  margin: 10px 0 0;
+  color: var(--muted);
 }
 
-/* ===== 游戏风 CTA 按钮 ===== */
-
-.cta{
-  margin-top:16px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
 }
 
-.btn{
-  padding:10px 14px;
-  border-radius:8px;
-  border:1px solid var(--line);
-  background:#fff;
-  text-decoration:none;
-  color:#1e293b;
-  font-size:14px;
-
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-
-  transition: background .15s ease, border-color .15s ease;
+.post-card {
+  display: block;
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
 }
 
-.btn:hover{
-  background:#f1f5f9;
-  border-color:#c7d2fe;
+.post-card:hover {
+  border-color: #bfdbfe;
+  background: #fbfdff;
 }
 
-.btn.primary{
-  background:var(--blue);
-  color:#fff;
-  border-color:var(--blue);
+.post-card h2,
+.post-card h3 {
+  margin: 0;
 }
 
-.btn.primary:hover{
-  background:#2563eb;
+.post-meta {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
-.btn .dot{
-  display:none;
+.post-excerpt {
+  margin: 10px 0 0;
+  color: #374151;
 }
 
-/* ===== 下方功能卡 ===== */
-
-.grid{
-  margin-top:18px;
-  display:grid;
-  grid-template-columns:repeat(12,1fr);
-  gap:12px;
+.tag {
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 2px 9px;
 }
 
-.nav{
-  grid-column:span 4;
-  padding:16px 14px;
-  border-radius:12px;
-  border:1px solid var(--line2);
-  background:#f8fafc;
-  text-decoration:none;
-  color:inherit;
-
-  transition: background .15s ease, border-color .15s ease;
+.section-grid {
+  display: grid;
+  gap: 16px;
 }
 
-.nav:hover{
-  background:#eef2ff;
-  border-color:#c7d2fe;
+.section-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
 }
 
-@media (max-width:860px){
-  .nav{grid-column:span 12;}
+.section-panel h2 {
+  margin: 0;
 }
 
-.nav .top{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:6px;
+.section-panel p {
+  margin: 10px 0;
+  color: var(--muted);
 }
 
-.nav .cn{
-  margin:0;
-  font-size:16px;
+.section-panel a {
+  color: var(--primary);
+  text-decoration: none;
 }
 
-.nav .en{
-  margin:0;
-  font-size:11px;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  color:#64748b;
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--panel);
 }
 
-.nav .hint{
-  margin:0;
-  font-size:13px;
-  color:#64748b;
+.footer-inner {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
-/* ===== 右侧区域 ===== */
+@media (max-width: 720px) {
+  .header-inner {
+    min-height: auto;
+    padding: 14px 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-.side-stack{
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-}
-
-.side{
-  padding:16px;
-}
-
-.poster{
-  height:240px;
-  border-radius:12px;
-  border:1px dashed #c7d2fe;
-  background:
-    linear-gradient(135deg,#e0e7ff,#f8fafc);
-}
-
-/* ===== 推荐列表（像任务/公告） ===== */
-
-.recommend{
-  padding:14px;
-}
-
-.rec-title{
-  margin:0 0 8px;
-  font-size:13px;
-  font-weight:600;
-  color:#334155;
-}
-
-.rec-list{
-  list-style:none;
-  padding:0;
-  margin:0;
-
-  max-height:180px;
-  overflow-y:auto;
-
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.rec-list a{
-  display:block;
-  padding:8px 10px;
-  border-radius:8px;
-  border:1px solid var(--line);
-  background:#fff;
-  font-size:13px;
-  color:#1e293b;
-  text-decoration:none;
-}
-
-.rec-list a:hover{
-  background:#f1f5f9;
-}
-
-/* ===== footer ===== */
-
-footer{
-  margin-top:auto;
-  padding-top:14px;
-  border-top:1px solid var(--line);
-  font-size:12px;
-  color:#64748b;
-  display:flex;
-  justify-content:space-between;
-}
-
-footer a{
-  color:var(--blue);
-  text-decoration:none;
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 0;
+  }
 }

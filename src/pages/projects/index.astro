@@ -1,16 +1,50 @@
 ---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
 
+type ProjectEntry = CollectionEntry<"projects">;
+
+const entries: ProjectEntry[] = await getCollection(
+  "projects",
+  (entry: ProjectEntry) => !entry.data.draft
+);
+
+const toDate = (value: unknown): Date => {
+  if (value instanceof Date) return value;
+  if (!value) return new Date(0);
+  const date = new Date(value as string);
+  return Number.isNaN(date.getTime()) ? new Date(0) : date;
+};
+
+const projects = entries
+  .slice()
+  .sort((a: ProjectEntry, b: ProjectEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime());
 ---
 
-<html lang="zh-cn">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Projects</title>
-	</head>
-	<body>
-		<h1>Projects</h1>
-	</body>
-</html>
+<BaseLayout title="项目 | My Blog" description="项目记录列表" currentPath="/projects/">
+  <header class="page-header">
+    <h1>项目记录</h1>
+    <p>共 {projects.length} 篇，按时间倒序展示。</p>
+  </header>
+
+  {projects.length === 0 ? (
+    <p>暂无项目记录。</p>
+  ) : (
+    <ul class="post-list">
+      {
+        projects.map((project: ProjectEntry) => (
+          <li>
+            <a class="post-card" href={`${import.meta.env.BASE_URL}projects/${project.slug}/`}>
+              <h2>{project.data.title}</h2>
+              <div class="post-meta">
+                {project.data.date && <span>{toDate(project.data.date).toISOString().slice(0, 10)}</span>}
+                {project.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
+              </div>
+              {project.data.description && <p class="post-excerpt">{project.data.description}</p>}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  )}
+</BaseLayout>

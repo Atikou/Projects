@@ -1,0 +1,76 @@
+---
+import "../styles/gamepunk.css";
+
+type NavItem = {
+  href: string;
+  label: string;
+};
+
+type Props = {
+  title?: string;
+  description?: string;
+  currentPath?: string;
+};
+
+const {
+  title = "My Blog",
+  description = "Built with Astro",
+  currentPath = "/",
+} = Astro.props as Props;
+
+const siteTitle = "My Blog";
+const navItems: NavItem[] = [
+  { href: "/", label: "首页" },
+  { href: "/blogs/", label: "博客" },
+  { href: "/notes/", label: "笔记" },
+  { href: "/projects/", label: "项目" },
+];
+
+const makeUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href={makeUrl("/favicon.svg")} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href={makeUrl("/")} class="site-title">{siteTitle}</a>
+        <nav class="site-nav" aria-label="主导航">
+          {
+            navItems.map((item) => (
+              <a
+                href={makeUrl(item.href)}
+                class={currentPath.startsWith(item.href) && item.href !== "/"
+                  ? "active"
+                  : item.href === "/" && currentPath === "/"
+                    ? "active"
+                    : ""}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </header>
+
+    <main class="container page-content">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <span>© {new Date().getFullYear()} {siteTitle}</span>
+        <span>Powered by Astro</span>
+      </div>
+    </footer>
+  </body>
+</html>

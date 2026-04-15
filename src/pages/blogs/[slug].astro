@@ -2,7 +2,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import MarkdownLayout from "../../layouts/MarkdownLayout.astro";
 
-type NoteEntry = CollectionEntry<"notes">;
+type BlogEntry = CollectionEntry<"blog">;
 
 const toDate = (value: unknown): Date => {
   if (value instanceof Date) return value;
@@ -11,14 +11,14 @@ const toDate = (value: unknown): Date => {
 };
 
 export async function getStaticPaths() {
-  const entries: NoteEntry[] = await getCollection("notes", (entry: NoteEntry) => !entry.data.draft);
-  return entries.map((entry: NoteEntry) => ({
+  const entries: BlogEntry[] = await getCollection("blog", (entry: BlogEntry) => !entry.data.draft);
+  return entries.map((entry: BlogEntry) => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
 }
 
-const { entry } = Astro.props as { entry: NoteEntry };
+const { entry } = Astro.props as { entry: BlogEntry };
 const { Content } = await entry.render();
 ---
 
@@ -27,7 +27,7 @@ const { Content } = await entry.render();
   description={entry.data.description}
   dateText={toDate(entry.data.date).toISOString().slice(0, 10)}
   tags={entry.data.tags}
-  currentPath="/notes/"
+  currentPath="/blogs/"
 >
   <Content />
 </MarkdownLayout>
