@@ -1,6 +1,6 @@
 ---
-import { getCollection, type CollectionEntry } from "astro:content";
-import MarkdownLayout from "../../layouts/MarkdownLayout.astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import ContentLayout from "../../layouts/ContentLayout.astro";
 
 type ProjectEntry = CollectionEntry<"projects">;
 
@@ -12,35 +12,33 @@ const toDate = (value: unknown): Date => {
 };
 
 export async function getStaticPaths() {
-  const entries: ProjectEntry[] = await getCollection(
-    "projects",
-    (entry: ProjectEntry) => !entry.data.draft
-  );
-  return entries.map((entry: ProjectEntry) => ({
-    params: { slug: entry.slug },
+  const posts: ProjectEntry[] = await getCollection("projects", (entry: ProjectEntry) => !entry.data.draft);
+  return posts.map((entry: ProjectEntry) => ({
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
 
 const { entry } = Astro.props as { entry: ProjectEntry };
-const { Content } = await entry.render();
-
+const { Content } = await render(entry);
 const links = entry.data.links ?? {};
 ---
 
-<MarkdownLayout
+<ContentLayout
   title={entry.data.title}
   description={entry.data.description}
   dateText={entry.data.date ? toDate(entry.data.date).toISOString().slice(0, 10) : ""}
   tags={entry.data.tags}
   currentPath="/projects/"
+  tagBasePath="projects"
+  cover={entry.data.cover}
 >
   {(links.demo || links.github || links.store) && (
-    <div class="post-meta">
-      {links.demo && <a href={links.demo} target="_blank" rel="noreferrer">Demo</a>}
-      {links.github && <a href={links.github} target="_blank" rel="noreferrer">GitHub</a>}
-      {links.store && <a href={links.store} target="_blank" rel="noreferrer">Store</a>}
+    <div class="meta-row" style="margin-bottom: 12px;">
+      {links.demo && <a class="tag" href={links.demo} target="_blank" rel="noreferrer">Demo</a>}
+      {links.github && <a class="tag" href={links.github} target="_blank" rel="noreferrer">GitHub</a>}
+      {links.store && <a class="tag" href={links.store} target="_blank" rel="noreferrer">Store</a>}
     </div>
   )}
   <Content />
-</MarkdownLayout>
+</ContentLayout>

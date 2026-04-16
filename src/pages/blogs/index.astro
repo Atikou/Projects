@@ -2,9 +2,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-type BlogEntry = CollectionEntry<"blog">;
-
-const entries: BlogEntry[] = await getCollection("blog", (entry: BlogEntry) => !entry.data.draft);
+type BlogEntry = CollectionEntry<"blogs">;
 
 const toDate = (value: unknown): Date => {
   if (value instanceof Date) return value;
@@ -12,35 +10,81 @@ const toDate = (value: unknown): Date => {
   return Number.isNaN(date.getTime()) ? new Date(0) : date;
 };
 
-const posts = entries
+const fmtDate = (value: unknown): string => toDate(value).toISOString().slice(0, 10);
+
+const posts: BlogEntry[] = (await getCollection("blogs", (entry: BlogEntry) => !entry.data.draft))
   .slice()
   .sort((a: BlogEntry, b: BlogEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime());
+
+const tagSet = Array.from(new Set(posts.flatMap((post: BlogEntry) => post.data.tags))).sort((a, b) =>
+  a.localeCompare(b),
+);
 ---
 
-<BaseLayout title="博客 | My Blog" description="博客文章列表" currentPath="/blogs/">
-  <header class="page-header">
-    <h1>博客文章</h1>
-    <p>共 {posts.length} 篇，按发布时间倒序展示。</p>
+<BaseLayout title="博客 | Pixel Base" description="博客列表与搜索" currentPath="/blogs/">
+  <header class="list-header">
+    <h1 class="pixel-text">博客列表</h1>
+    <p>共 {posts.length} 篇，按时间倒序。支持关键词搜索和 tag 筛选。</p>
   </header>
 
-  {posts.length === 0 ? (
-    <p>暂无文章，请在 `src/content/blog` 下新增 Markdown 文件。</p>
-  ) : (
-    <ul class="post-list">
+  <section class="panel">
+    <div class="search-controls">
+      <input id="blog-search-input" type="text" placeholder="搜索博客标题、摘要、标签..." />
+      <select id="blog-tag-select">
+        <option value="">全部标签</option>
+        {tagSet.map((tag) => <option value={tag}>{tag}</option>)}
+      </select>
+      <a class="clear-link" href={`${import.meta.env.BASE_URL}blogs/`}>清空</a>
+    </div>
+
+    <ul class="item-list" id="blog-list">
       {
         posts.map((post: BlogEntry) => (
-          <li>
-            <a class="post-card" href={`${import.meta.env.BASE_URL}blogs/${post.slug}/`}>
-              <h2>{post.data.title}</h2>
-              <div class="post-meta">
-                <span>{toDate(post.data.date).toISOString().slice(0, 10)}</span>
-                {post.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
-              </div>
-              {post.data.description && <p class="post-excerpt">{post.data.description}</p>}
-            </a>
+          <li
+            class="item-card searchable-item"
+            data-search={`${post.data.title} ${post.data.description ?? ""} ${post.data.tags.join(" ")}`.toLowerCase()}
+            data-tags={post.data.tags.join(",")}
+          >
+            <h3><a href={`${import.meta.env.BASE_URL}blogs/${post.id}/`}>{post.data.title}</a></h3>
+            <div class="meta-row">
+              <span>{fmtDate(post.data.date)}</span>
+              {
+                post.data.tags.map((tag: string) => (
+                  <a class="tag" href={`${import.meta.env.BASE_URL}blogs/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
+                ))
+              }
+            </div>
+            {post.data.description && <p>{post.data.description}</p>}
           </li>
         ))
       }
     </ul>
-  )}
+  </section>
+
+  <script>
+    const input = document.getElementById("blog-search-input");
+    const tagSelect = document.getElementById("blog-tag-select");
+    const items = Array.from(document.querySelectorAll(".searchable-item"));
+    const url = new URL(window.location.href);
+    const initQ = url.searchParams.get("q") ?? "";
+    const initTag = url.searchParams.get("tag") ?? "";
+    if (input) input.value = initQ;
+    if (tagSelect && initTag) tagSelect.value = initTag;
+
+    const filterList = () => {
+      const q = input?.value.trim().toLowerCase() ?? "";
+      const tag = tagSelect?.value ?? "";
+      items.forEach((item) => {
+        const search = item.getAttribute("data-search") ?? "";
+        const tags = (item.getAttribute("data-tags") ?? "").split(",").filter(Boolean);
+        const matchesQ = !q || search.includes(q);
+        const matchesTag = !tag || tags.includes(tag);
+        item.style.display = matchesQ && matchesTag ? "" : "none";
+      });
+    };
+
+    input?.addEventListener("input", filterList);
+    tagSelect?.addEventListener("change", filterList);
+    filterList();
+  </script>
 </BaseLayout>

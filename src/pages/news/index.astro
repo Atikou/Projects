@@ -1,0 +1,114 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="新闻 | Pixel Base" description="实时新闻页" currentPath="/news/">
+  <header class="list-header">
+    <h1 class="pixel-text">实时新闻</h1>
+    <p>数据来源 HackerNewsCN（hn.aimaker.dev）。</p>
+  </header>
+
+  <section class="panel">
+    <div class="search-controls">
+      <select id="news-category">
+        <option value="top">24小时热榜</option>
+        <option value="new">最新</option>
+        <option value="ask">问答</option>
+        <option value="show">展示</option>
+        <option value="jobs">工作</option>
+      </select>
+      <input id="news-search-input" type="text" placeholder="搜索新闻标题..." />
+      <a class="clear-link" href={`${import.meta.env.BASE_URL}news/`}>清空</a>
+    </div>
+    <ul class="item-list news-list" id="news-list">
+      <li class="item-card">正在抓取 HackerNewsCN 内容...</li>
+    </ul>
+  </section>
+
+  <script>
+    const list = document.getElementById("news-list");
+    const input = document.getElementById("news-search-input");
+    const category = document.getElementById("news-category");
+    let rows = [];
+
+    const parseMarkdownLinks = (text) => {
+      const lines = text.split("\n");
+      const out = [];
+      for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        const m = line.match(/^\[(.+?)\]\((https?:\/\/[^)]+)\)$/);
+        if (!m) continue;
+        const title = m[1].trim();
+        const url = m[2].trim();
+        if (!title || title === "原帖") continue;
+        let meta = "";
+        let author = "";
+        for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j += 1) {
+          const next = lines[j].trim();
+          if (!next) continue;
+          if (next.includes("分•作者")) {
+            meta = next;
+            const authorMatch = next.match(/作者:\s*([^•]+)/);
+            author = authorMatch ? authorMatch[1].trim() : "";
+            break;
+          }
+        }
+        out.push({ title, url, meta, author });
+      }
+      return out;
+    };
+
+    const render = () => {
+      if (!list) return;
+      const q = input?.value.trim().toLowerCase() ?? "";
+      const filtered = rows.filter((item) => item.title.toLowerCase().includes(q));
+      list.innerHTML = "";
+      filtered.slice(0, 40).forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "item-card";
+        li.innerHTML = `
+          <h3><a href="${item.url}" target="_blank" rel="noreferrer">${item.title}</a></h3>
+          <div class="meta-row">
+            ${item.meta ? `<span>${item.meta}</span>` : ""}
+            ${item.author ? `<span class="source">${item.author}</span>` : ""}
+          </div>
+        `;
+        list.appendChild(li);
+      });
+      if (filtered.length === 0) {
+        const li = document.createElement("li");
+        li.className = "item-card";
+        li.textContent = "没有匹配的新闻。";
+        list.appendChild(li);
+      }
+    };
+
+    const load = async () => {
+      if (!list || !category) return;
+      list.innerHTML = "<li class='item-card'>正在抓取 HackerNewsCN 内容...</li>";
+      const selected = category.value || "top";
+      try {
+        const sourceUrl = `https://hn.aimaker.dev/category/${selected}`;
+        const proxyUrl = `https://r.jina.ai/http://hn.aimaker.dev/category/${selected}`;
+        const res = await fetch(proxyUrl);
+        const markdown = await res.text();
+        rows = parseMarkdownLinks(markdown);
+        if (rows.length === 0) {
+          throw new Error("empty");
+        }
+        render();
+      } catch {
+        list.innerHTML = `
+          <li class="item-card">
+            抓取失败，请直接访问
+            <a href="https://hn.aimaker.dev/category/${selected}" target="_blank" rel="noreferrer">HackerNewsCN ${selected}</a>
+          </li>
+        `;
+      }
+    };
+
+    input?.addEventListener("input", render);
+    category?.addEventListener("change", load);
+    load();
+  </script>
+</BaseLayout>

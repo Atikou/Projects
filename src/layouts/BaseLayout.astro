@@ -1,5 +1,5 @@
 ---
-import "../styles/gamepunk.css";
+import "../styles/site.css";
 
 type NavItem = {
   href: string;
@@ -10,23 +10,33 @@ type Props = {
   title?: string;
   description?: string;
   currentPath?: string;
+  backgroundCover?: string;
 };
 
 const {
-  title = "My Blog",
-  description = "Built with Astro",
+  title = "Pixel Base",
+  description = "Pixel style Astro site",
   currentPath = "/",
+  backgroundCover = "",
 } = Astro.props as Props;
 
-const siteTitle = "My Blog";
+const siteTitle = "Pixel Base";
+const siteEmail = "your.email@example.com";
+
 const navItems: NavItem[] = [
   { href: "/", label: "首页" },
+  { href: "/news/", label: "新闻" },
   { href: "/blogs/", label: "博客" },
   { href: "/notes/", label: "笔记" },
   { href: "/projects/", label: "项目" },
 ];
 
 const makeUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+const resolvedBackgroundCover = backgroundCover
+  ? /^https?:\/\//.test(backgroundCover)
+    ? backgroundCover
+    : makeUrl(`/${backgroundCover.replace(/^\//, "")}`)
+  : "";
 ---
 
 <!doctype html>
@@ -36,13 +46,16 @@ const makeUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
-    <link rel="icon" type="image/svg+xml" href={makeUrl("/favicon.svg")} />
     <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href={makeUrl("/favicon.svg")} />
   </head>
-  <body>
+  <body
+    class={resolvedBackgroundCover ? "page-with-cover" : ""}
+    style={resolvedBackgroundCover ? `--page-cover-url: url('${resolvedBackgroundCover}');` : undefined}
+  >
     <header class="site-header">
       <div class="container header-inner">
-        <a href={makeUrl("/")} class="site-title">{siteTitle}</a>
+        <a class="site-title pixel-text" href={makeUrl("/")}>{siteTitle}</a>
         <nav class="site-nav" aria-label="主导航">
           {
             navItems.map((item) => (
@@ -68,8 +81,9 @@ const makeUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\
 
     <footer class="site-footer">
       <div class="container footer-inner">
-        <span>© {new Date().getFullYear()} {siteTitle}</span>
+        <span>© 2026 My Blog</span>
         <span>Powered by Astro</span>
+        <a href={`mailto:${siteEmail}`}>{siteEmail}</a>
       </div>
     </footer>
   </body>

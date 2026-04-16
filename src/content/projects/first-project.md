@@ -1,6 +1,7 @@
 ---
 title: "First Project"
 description: "一个示例项目条目"
+cover: "images/projects/first-project-cover.jpg"
 tech: ["Astro"]
 tags: ["project"]
 links:

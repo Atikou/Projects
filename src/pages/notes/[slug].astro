@@ -1,6 +1,6 @@
 ---
-import { getCollection, type CollectionEntry } from "astro:content";
-import MarkdownLayout from "../../layouts/MarkdownLayout.astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import ContentLayout from "../../layouts/ContentLayout.astro";
 
 type NoteEntry = CollectionEntry<"notes">;
 
@@ -11,23 +11,25 @@ const toDate = (value: unknown): Date => {
 };
 
 export async function getStaticPaths() {
-  const entries: NoteEntry[] = await getCollection("notes", (entry: NoteEntry) => !entry.data.draft);
-  return entries.map((entry: NoteEntry) => ({
-    params: { slug: entry.slug },
+  const posts: NoteEntry[] = await getCollection("notes", (entry: NoteEntry) => !entry.data.draft);
+  return posts.map((entry: NoteEntry) => ({
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
 
 const { entry } = Astro.props as { entry: NoteEntry };
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 ---
 
-<MarkdownLayout
+<ContentLayout
   title={entry.data.title}
   description={entry.data.description}
   dateText={toDate(entry.data.date).toISOString().slice(0, 10)}
   tags={entry.data.tags}
   currentPath="/notes/"
+  tagBasePath="notes"
+  cover={entry.data.cover}
 >
   <Content />
-</MarkdownLayout>
+</ContentLayout>

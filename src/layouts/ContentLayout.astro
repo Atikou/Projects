@@ -1,0 +1,49 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import coverRemotes from "../data/cover-remotes.json";
+
+type Props = {
+  title: string;
+  description?: string;
+  dateText?: string;
+  tags?: string[];
+  currentPath?: string;
+  tagBasePath: string;
+  cover: string;
+};
+
+const {
+  title,
+  description = "",
+  dateText = "",
+  tags = [],
+  currentPath = "/",
+  tagBasePath,
+  cover,
+} = Astro.props as Props;
+
+const normalizedCover = cover.replace(/^\/+/, "");
+const mappedRemoteCover = (coverRemotes as Record<string, string>)[normalizedCover];
+const coverUrl = mappedRemoteCover ?? `${import.meta.env.BASE_URL}${normalizedCover}`;
+---
+
+<BaseLayout
+  title={`${title} | Pixel Base`}
+  description={description}
+  currentPath={currentPath}
+  backgroundCover={coverUrl}
+>
+  <article class="article-shell">
+    <header>
+      <h1>{title}</h1>
+      <div class="meta-row">
+        {dateText && <span>{dateText}</span>}
+        {tags.map((tag) => <a class="tag" href={`${import.meta.env.BASE_URL}${tagBasePath}/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>)}
+      </div>
+      {description && <p>{description}</p>}
+    </header>
+    <section class="article-content">
+      <slot />
+    </section>
+  </article>
+</BaseLayout>

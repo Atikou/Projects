@@ -2,72 +2,252 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-type BlogEntry = CollectionEntry<"blog">;
+type BlogEntry = CollectionEntry<"blogs">;
 type NoteEntry = CollectionEntry<"notes">;
 type ProjectEntry = CollectionEntry<"projects">;
 
-const blogs: BlogEntry[] = await getCollection("blog", (entry: BlogEntry) => !entry.data.draft);
-const notes: NoteEntry[] = await getCollection("notes", (entry: NoteEntry) => !entry.data.draft);
-const projects: ProjectEntry[] = await getCollection("projects", (entry: ProjectEntry) => !entry.data.draft);
-
 const toDate = (value: unknown): Date => {
   if (value instanceof Date) return value;
+  if (!value) return new Date(0);
   const date = new Date(value as string);
   return Number.isNaN(date.getTime()) ? new Date(0) : date;
 };
 
-const latestBlogs = blogs
+const fmtDate = (value: unknown): string => toDate(value).toISOString().slice(0, 10);
+
+const blogs: BlogEntry[] = (await getCollection("blogs", (entry: BlogEntry) => !entry.data.draft))
   .slice()
-  .sort((a: BlogEntry, b: BlogEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime())
-  .slice(0, 5);
+  .sort((a: BlogEntry, b: BlogEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime());
+
+const notes: NoteEntry[] = (await getCollection("notes", (entry: NoteEntry) => !entry.data.draft))
+  .slice()
+  .sort((a: NoteEntry, b: NoteEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime());
+
+const projects: ProjectEntry[] = (await getCollection("projects", (entry: ProjectEntry) => !entry.data.draft))
+  .slice()
+  .sort((a: ProjectEntry, b: ProjectEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime());
+
+const latestBlogs = blogs.slice(0, 2);
+const latestNotes = notes.slice(0, 2);
+const latestProjects = projects.slice(0, 2);
+
+const searchSource = [
+  ...blogs.map((post) => ({
+    type: "博客",
+    title: post.data.title,
+    description: post.data.description ?? "",
+    date: fmtDate(post.data.date),
+    tags: post.data.tags,
+    url: `${import.meta.env.BASE_URL}blogs/${post.id}/`,
+  })),
+  ...notes.map((post) => ({
+    type: "笔记",
+    title: post.data.title,
+    description: post.data.description,
+    date: fmtDate(post.data.date),
+    tags: post.data.tags,
+    url: `${import.meta.env.BASE_URL}notes/${post.id}/`,
+  })),
+  ...projects.map((post) => ({
+    type: "项目",
+    title: post.data.title,
+    description: post.data.description ?? "",
+    date: post.data.date ? fmtDate(post.data.date) : "未设置",
+    tags: post.data.tags,
+    url: `${import.meta.env.BASE_URL}projects/${post.id}/`,
+  })),
+];
 ---
 
-<BaseLayout title="首页 | My Blog" description="一个基于 Astro 的博客站点" currentPath="/">
-  <header class="page-header">
-    <h1>欢迎来到我的博客</h1>
-    <p>这里收录博客文章、开发笔记和项目记录，所有内容均来自现有 Markdown 文件。</p>
-  </header>
+<BaseLayout title="首页 | Pixel Base" description="像素风多页面内容站" currentPath="/">
+  <section class="hero">
+    <h1 class="pixel-text">Pixel Knowledge Hub</h1>
+    <p>首页展示实时新闻、博客、笔记和项目的最新内容，并支持全局搜索。</p>
+  </section>
 
-  <section class="section-grid">
-    <article class="section-panel">
-      <h2>最新博客</h2>
-      <p>最近发布的文章会优先显示在这里。</p>
-      {latestBlogs.length === 0 ? (
-        <p>暂无博客文章。</p>
-      ) : (
-        <ul class="post-list">
-          {
-            latestBlogs.map((post: BlogEntry) => (
-              <li>
-                <a class="post-card" href={`${import.meta.env.BASE_URL}blogs/${post.slug}/`}>
-                  <h3>{post.data.title}</h3>
-                  <div class="post-meta">
-                    <span>{toDate(post.data.date).toISOString().slice(0, 10)}</span>
-                    {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
-                  </div>
-                  {post.data.description && <p class="post-excerpt">{post.data.description}</p>}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      )}
-      <p><a href={`${import.meta.env.BASE_URL}blogs/`}>查看全部博客</a></p>
+  <section class="news-strip">
+    <h2 class="pixel-text">实时新闻（HackerNewsCN）</h2>
+    <ul id="home-news-list">
+      <li>正在加载新闻...</li>
+    </ul>
+    <p><a href={`${import.meta.env.BASE_URL}news/`}>查看全部新闻页</a></p>
+  </section>
+
+  <section class="layout-grid home-main-grid">
+    <article class="panel home-panel home-search-panel">
+      <h2 class="section-title pixel-text">全局搜索</h2>
+      <div class="search-controls">
+        <input id="global-search-input" type="text" placeholder="搜索博客 / 笔记 / 项目..." />
+        <select id="global-search-type">
+          <option value="all">全部类型</option>
+          <option value="博客">博客</option>
+          <option value="笔记">笔记</option>
+          <option value="项目">项目</option>
+        </select>
+      </div>
+      <ul class="item-list fixed-search-list fixed-scroll" id="global-search-results">
+        {
+          searchSource.slice(0, 4).map((item) => (
+            <li class="item-card">
+              <h3><a href={item.url}>[{item.type}] {item.title}</a></h3>
+              <div class="meta-row">
+                <span>{item.date}</span>
+                {item.tags.map((tag: string) => <span class="tag">#{tag}</span>)}
+              </div>
+              {item.description && <p>{item.description}</p>}
+            </li>
+          ))
+        }
+      </ul>
     </article>
 
-    <article class="section-panel">
-      <h2>内容概览</h2>
-      <p>当前站点内容统计如下：</p>
-      <ul>
-        <li>博客：{blogs.length} 篇</li>
-        <li>笔记：{notes.length} 篇</li>
-        <li>项目：{projects.length} 篇</li>
+    <article class="panel home-panel home-links-panel">
+      <h2 class="section-title pixel-text">快速入口</h2>
+      <ul class="item-list fixed-links-list fixed-scroll">
+        <li class="item-card"><a href={`${import.meta.env.BASE_URL}blogs/`}>博客列表</a></li>
+        <li class="item-card"><a href={`${import.meta.env.BASE_URL}notes/`}>笔记列表</a></li>
+        <li class="item-card"><a href={`${import.meta.env.BASE_URL}projects/`}>项目列表</a></li>
+        <li class="item-card"><a href={`${import.meta.env.BASE_URL}news/`}>新闻页</a></li>
       </ul>
-      <p>
-        <a href={`${import.meta.env.BASE_URL}notes/`}>浏览笔记</a> ·
-        {" "}
-        <a href={`${import.meta.env.BASE_URL}projects/`}>浏览项目</a>
-      </p>
     </article>
   </section>
+
+  <section class="three-col home-three-col" style="margin-top: 18px;">
+    <article class="panel home-latest-panel">
+      <h2 class="pixel-text">最新博客</h2>
+      <ul class="item-list fixed-latest-list fixed-scroll">
+        {
+          latestBlogs.map((post: BlogEntry) => (
+            <li class="item-card">
+              <h3><a href={`${import.meta.env.BASE_URL}blogs/${post.id}/`}>{post.data.title}</a></h3>
+              <div class="meta-row">
+                <span>{fmtDate(post.data.date)}</span>
+                {post.data.tags.map((tag: string) => <a class="tag" href={`${import.meta.env.BASE_URL}blogs/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>)}
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </article>
+
+    <article class="panel home-latest-panel">
+      <h2 class="pixel-text">最新笔记</h2>
+      <ul class="item-list fixed-latest-list fixed-scroll">
+        {
+          latestNotes.map((post: NoteEntry) => (
+            <li class="item-card">
+              <h3><a href={`${import.meta.env.BASE_URL}notes/${post.id}/`}>{post.data.title}</a></h3>
+              <div class="meta-row">
+                <span>{fmtDate(post.data.date)}</span>
+                {post.data.tags.map((tag: string) => <a class="tag" href={`${import.meta.env.BASE_URL}notes/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>)}
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </article>
+
+    <article class="panel home-latest-panel">
+      <h2 class="pixel-text">最新项目</h2>
+      <ul class="item-list fixed-latest-list fixed-scroll">
+        {
+          latestProjects.map((post: ProjectEntry) => (
+            <li class="item-card">
+              <h3><a href={`${import.meta.env.BASE_URL}projects/${post.id}/`}>{post.data.title}</a></h3>
+              <div class="meta-row">
+                <span>{post.data.date ? fmtDate(post.data.date) : "未设置"}</span>
+                {post.data.tags.map((tag: string) => <a class="tag" href={`${import.meta.env.BASE_URL}projects/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>)}
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </article>
+  </section>
+
+  <script type="application/json" id="global-search-data" set:html={JSON.stringify(searchSource)} />
+  <script>
+    const sourceEl = document.getElementById("global-search-data");
+    const searchInput = document.getElementById("global-search-input");
+    const searchType = document.getElementById("global-search-type");
+    const resultBox = document.getElementById("global-search-results");
+    const raw = sourceEl?.textContent ?? "[]";
+    const source = JSON.parse(raw);
+
+    const renderResults = () => {
+      if (!resultBox || !searchInput || !searchType) return;
+      const q = searchInput.value.trim().toLowerCase();
+      const type = searchType.value;
+      const filtered = source.filter((item) => {
+        const haystack = `${item.title} ${item.description} ${item.tags.join(" ")}`.toLowerCase();
+        const typeOk = type === "all" || item.type === type;
+        return typeOk && (!q || haystack.includes(q));
+      });
+      resultBox.innerHTML = "";
+      filtered.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "item-card";
+        li.innerHTML = `
+          <h3><a href="${item.url}">[${item.type}] ${item.title}</a></h3>
+          <div class="meta-row">
+            <span>${item.date}</span>
+            ${item.tags.map((tag) => `<span class="tag">#${tag}</span>`).join("")}
+          </div>
+          ${item.description ? `<p>${item.description}</p>` : ""}
+        `;
+        resultBox.appendChild(li);
+      });
+      if (filtered.length === 0) {
+        const li = document.createElement("li");
+        li.className = "item-card";
+        li.textContent = "没有匹配内容。";
+        resultBox.appendChild(li);
+      }
+    };
+
+    searchInput?.addEventListener("input", renderResults);
+    searchType?.addEventListener("change", renderResults);
+    renderResults();
+
+    const homeNewsList = document.getElementById("home-news-list");
+    const parseMarkdownLinks = (text) => {
+      const lines = text.split("\n");
+      const out = [];
+      for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        const m = line.match(/^\[(.+?)\]\((https?:\/\/[^)]+)\)$/);
+        if (!m) continue;
+        const title = m[1].trim();
+        const url = m[2].trim();
+        if (!title || title === "原帖") continue;
+        out.push({ title, url });
+      }
+      return out;
+    };
+
+    const loadNews = async () => {
+      if (!homeNewsList) return;
+      try {
+        const res = await fetch("https://r.jina.ai/http://hn.aimaker.dev/category/top");
+        const markdown = await res.text();
+        const links = parseMarkdownLinks(markdown).slice(0, 5);
+        homeNewsList.innerHTML = "";
+        links.forEach((item) => {
+          const li = document.createElement("li");
+          li.innerHTML = `<a href="${item.url}" target="_blank" rel="noreferrer">${item.title}</a>`;
+          homeNewsList.appendChild(li);
+        });
+        if (links.length === 0) {
+          throw new Error("empty");
+        }
+      } catch {
+        homeNewsList.innerHTML = `
+          <li><a href="https://hn.aimaker.dev/category/top" target="_blank" rel="noreferrer">24小时热榜（HackerNewsCN）</a></li>
+          <li><a href="https://hn.aimaker.dev/category/new" target="_blank" rel="noreferrer">最新（HackerNewsCN）</a></li>
+          <li><a href="https://hn.aimaker.dev/category/show" target="_blank" rel="noreferrer">展示（HackerNewsCN）</a></li>
+        `;
+      }
+    };
+    loadNews();
+  </script>
 </BaseLayout>

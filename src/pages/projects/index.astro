@@ -4,11 +4,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 type ProjectEntry = CollectionEntry<"projects">;
 
-const entries: ProjectEntry[] = await getCollection(
-  "projects",
-  (entry: ProjectEntry) => !entry.data.draft
-);
-
 const toDate = (value: unknown): Date => {
   if (value instanceof Date) return value;
   if (!value) return new Date(0);
@@ -16,35 +11,78 @@ const toDate = (value: unknown): Date => {
   return Number.isNaN(date.getTime()) ? new Date(0) : date;
 };
 
-const projects = entries
+const fmtDate = (value: unknown): string => toDate(value).toISOString().slice(0, 10);
+
+const projects: ProjectEntry[] = (await getCollection("projects", (entry: ProjectEntry) => !entry.data.draft))
   .slice()
   .sort((a: ProjectEntry, b: ProjectEntry) => toDate(b.data.date).getTime() - toDate(a.data.date).getTime());
+
+const tagSet = Array.from(new Set(projects.flatMap((project: ProjectEntry) => project.data.tags))).sort((a, b) =>
+  a.localeCompare(b),
+);
 ---
 
-<BaseLayout title="项目 | My Blog" description="项目记录列表" currentPath="/projects/">
-  <header class="page-header">
-    <h1>项目记录</h1>
-    <p>共 {projects.length} 篇，按时间倒序展示。</p>
+<BaseLayout title="项目 | Pixel Base" description="项目列表与搜索" currentPath="/projects/">
+  <header class="list-header">
+    <h1 class="pixel-text">项目列表</h1>
+    <p>共 {projects.length} 条，按时间倒序。支持关键词搜索和 tag 筛选。</p>
   </header>
 
-  {projects.length === 0 ? (
-    <p>暂无项目记录。</p>
-  ) : (
-    <ul class="post-list">
+  <section class="panel">
+    <div class="search-controls">
+      <input id="project-search-input" type="text" placeholder="搜索项目标题、摘要、标签、技术栈..." />
+      <select id="project-tag-select">
+        <option value="">全部标签</option>
+        {tagSet.map((tag) => <option value={tag}>{tag}</option>)}
+      </select>
+      <a class="clear-link" href={`${import.meta.env.BASE_URL}projects/`}>清空</a>
+    </div>
+
+    <ul class="item-list">
       {
         projects.map((project: ProjectEntry) => (
-          <li>
-            <a class="post-card" href={`${import.meta.env.BASE_URL}projects/${project.slug}/`}>
-              <h2>{project.data.title}</h2>
-              <div class="post-meta">
-                {project.data.date && <span>{toDate(project.data.date).toISOString().slice(0, 10)}</span>}
-                {project.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
-              </div>
-              {project.data.description && <p class="post-excerpt">{project.data.description}</p>}
-            </a>
+          <li
+            class="item-card project-item"
+            data-search={`${project.data.title} ${project.data.description ?? ""} ${project.data.tags.join(" ")} ${project.data.tech.join(" ")}`.toLowerCase()}
+            data-tags={project.data.tags.join(",")}
+          >
+            <h3><a href={`${import.meta.env.BASE_URL}projects/${project.id}/`}>{project.data.title}</a></h3>
+            <div class="meta-row">
+              <span>{project.data.date ? fmtDate(project.data.date) : "未设置"}</span>
+              {
+                project.data.tags.map((tag: string) => (
+                  <a class="tag" href={`${import.meta.env.BASE_URL}projects/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
+                ))
+              }
+            </div>
+            {project.data.description && <p>{project.data.description}</p>}
           </li>
         ))
       }
     </ul>
-  )}
+  </section>
+
+  <script>
+    const input = document.getElementById("project-search-input");
+    const tagSelect = document.getElementById("project-tag-select");
+    const items = Array.from(document.querySelectorAll(".project-item"));
+    const url = new URL(window.location.href);
+    const initQ = url.searchParams.get("q") ?? "";
+    const initTag = url.searchParams.get("tag") ?? "";
+    if (input) input.value = initQ;
+    if (tagSelect && initTag) tagSelect.value = initTag;
+
+    const filterList = () => {
+      const q = input?.value.trim().toLowerCase() ?? "";
+      const tag = tagSelect?.value ?? "";
+      items.forEach((item) => {
+        const search = item.getAttribute("data-search") ?? "";
+        const tags = (item.getAttribute("data-tags") ?? "").split(",").filter(Boolean);
+        item.style.display = (!q || search.includes(q)) && (!tag || tags.includes(tag)) ? "" : "none";
+      });
+    };
+    input?.addEventListener("input", filterList);
+    tagSelect?.addEventListener("change", filterList);
+    filterList();
+  </script>
 </BaseLayout>
