@@ -59,18 +59,10 @@ const searchSource = [
 ];
 ---
 
-<BaseLayout title="首页 | Pixel Base" description="像素风多页面内容站" currentPath="/">
+<BaseLayout title="首页 | Polyg" description="博客、笔记与项目聚合页" currentPath="/">
   <section class="hero">
-    <h1 class="pixel-text">Pixel Knowledge Hub</h1>
-    <p>首页展示实时新闻、博客、笔记和项目的最新内容，并支持全局搜索。</p>
-  </section>
-
-  <section class="news-strip">
-    <h2 class="pixel-text">实时新闻（HackerNewsCN）</h2>
-    <ul id="home-news-list">
-      <li>正在加载新闻...</li>
-    </ul>
-    <p><a href={`${import.meta.env.BASE_URL}news/`}>查看全部新闻页</a></p>
+    <h1 class="pixel-text">Polyg</h1>
+    <p>博客、笔记和项目的最新内容</p>
   </section>
 
   <section class="layout-grid home-main-grid">
@@ -107,7 +99,6 @@ const searchSource = [
         <li class="item-card"><a href={`${import.meta.env.BASE_URL}blogs/`}>博客列表</a></li>
         <li class="item-card"><a href={`${import.meta.env.BASE_URL}notes/`}>笔记列表</a></li>
         <li class="item-card"><a href={`${import.meta.env.BASE_URL}projects/`}>项目列表</a></li>
-        <li class="item-card"><a href={`${import.meta.env.BASE_URL}news/`}>新闻页</a></li>
       </ul>
     </article>
   </section>
@@ -208,46 +199,5 @@ const searchSource = [
     searchInput?.addEventListener("input", renderResults);
     searchType?.addEventListener("change", renderResults);
     renderResults();
-
-    const homeNewsList = document.getElementById("home-news-list");
-    const parseMarkdownLinks = (text) => {
-      const lines = text.split("\n");
-      const out = [];
-      for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i].trim();
-        const m = line.match(/^\[(.+?)\]\((https?:\/\/[^)]+)\)$/);
-        if (!m) continue;
-        const title = m[1].trim();
-        const url = m[2].trim();
-        if (!title || title === "原帖") continue;
-        out.push({ title, url });
-      }
-      return out;
-    };
-
-    const loadNews = async () => {
-      if (!homeNewsList) return;
-      try {
-        const res = await fetch("https://r.jina.ai/http://hn.aimaker.dev/category/top");
-        const markdown = await res.text();
-        const links = parseMarkdownLinks(markdown).slice(0, 5);
-        homeNewsList.innerHTML = "";
-        links.forEach((item) => {
-          const li = document.createElement("li");
-          li.innerHTML = `<a href="${item.url}" target="_blank" rel="noreferrer">${item.title}</a>`;
-          homeNewsList.appendChild(li);
-        });
-        if (links.length === 0) {
-          throw new Error("empty");
-        }
-      } catch {
-        homeNewsList.innerHTML = `
-          <li><a href="https://hn.aimaker.dev/category/top" target="_blank" rel="noreferrer">24小时热榜（HackerNewsCN）</a></li>
-          <li><a href="https://hn.aimaker.dev/category/new" target="_blank" rel="noreferrer">最新（HackerNewsCN）</a></li>
-          <li><a href="https://hn.aimaker.dev/category/show" target="_blank" rel="noreferrer">展示（HackerNewsCN）</a></li>
-        `;
-      }
-    };
-    loadNews();
   </script>
 </BaseLayout>
